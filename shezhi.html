@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>设置</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, Arial,
+          sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .iphone-frame {
+        width: 390px;
+        height: 844px;
+        border-radius: 54px;
+        background: linear-gradient(180deg, #0f1724 0%, #0b1220 60%);
+        border: none;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), inset 0 -6px 20px rgba(0, 0, 0, 0.6),
+          0 8px 30px rgba(2, 6, 23, 0.55);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .screen {
+        width: 370px;
+        height: 804px;
+        border-radius: 44px;
+        background: #f7f7f7;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      /* 灵动岛 */
+      .dynamic-island {
+        position: absolute;
+        top: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 36px;
+        background: #0b0b0b;
+        border-radius: 18px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+        z-index: 10;
+      }
+      /* 状态栏 */
+      .status-bar {
+        position: absolute;
+        top: 6px;
+        left: 0;
+        width: 100%;
+        height: 48px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding: 6px 18px;
+        color: #000;
+        font-size: 15px;
+        pointer-events: none;
+        background: #f7f7f7;
+      }
+      .status-left {
+        font-weight: 600;
+      }
+      .status-right {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      /* 导航栏 */
+      .navbar {
+        height: 60px;
+        background: #f7f7f7;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        border-bottom: 1px solid #e8e8e8;
+        margin-top: 54px;
+      }
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .back-btn {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: none;
+        color: #1890ff;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .nav-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #000;
+      }
+      /* 主内容区 */
+      .content {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: #f7f7f7;
+      }
+      .section {
+        background: #fff;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .section-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px 12px 0 0;
+      }
+      .section-content {
+        padding: 20px;
+        line-height: 1.6;
+        color: #555;
+      }
+      .section-content h3 {
+        color: #333;
+        margin-bottom: 12px;
+        font-size: 16px;
+      }
+      .section-content p {
+        margin-bottom: 12px;
+      }
+      .section-content ul {
+        margin-left: 16px;
+        margin-bottom: 12px;
+      }
+      .section-content li {
+        margin-bottom: 8px;
+      }
+      .version-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      .version-info:last-child {
+        border-bottom: none;
+      }
+      .version-label {
+        font-weight: 500;
+        color: #333;
+      }
+      .version-value {
+        color: #666;
+        font-size: 14px;
+      }
+      .bug-link {
+        color: #1890ff;
+        text-decoration: none;
+        word-break: break-all;
+      }
+      .bug-link:hover {
+        text-decoration: underline;
+      }
+      .warning-text {
+        color: #ff4d4f;
+        font-weight: 500;
+        margin-top: 12px;
+        padding: 12px;
+        background: #fff2f0;
+        border: 1px solid #ffccc7;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="iphone-frame">
+      <div class="screen">
+        <div class="dynamic-island"></div>
+        <div class="status-bar">
+          <div class="status-left" id="currentTime">9:41</div>
+          <div class="status-right">
+            <span>📶</span>
+            <span>📡</span>
+            <span style="color: #00d4aa">100%</span>
+            <span style="color: #00d4aa">🔋</span>
+          </div>
+        </div>
+
+        <div class="navbar">
+          <div class="nav-left">
+            <button class="back-btn" onclick="goToIndex()">‹</button>
+            <h1 class="nav-title">设置</h1>
+          </div>
+        </div>
+
+        <div class="content">
+          <!-- 作品信息 -->
+          <div class="section">
+            <div class="section-header">📱 作品信息</div>
+            <div class="section-content">
+              <div class="version-info">
+                <span class="version-label">作者</span>
+                <span class="version-value">baobaoyu</span>
+              </div>
+              <div class="version-info">
+                <span class="version-label">版本</span>
+                <span class="version-value">1.0</span>
+              </div>
+              <div class="version-info">
+                <span class="version-label">类型</span>
+                <span class="version-value">公益作品</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 目前的功能 -->
+          <div class="section">
+            <div class="section-header">⚡ 目前的功能</div>
+            <div class="section-content">
+              <h3>🎯 核心功能</h3>
+              <ul>
+                <li><strong>AI智能对话：</strong>支持多种AI模型，智能回复</li>
+                <li><strong>仿QQ聊天界面：</strong>高度还原QQ聊天体验</li>
+                <li><strong>个人资料设置：</strong>自定义用户和AI角色信息</li>
+                <li><strong>API接口管理：</strong>灵活配置AI接口参数</li>
+              </ul>
+
+              <h3>🎨 界面功能</h3>
+              <ul>
+                <li><strong>iPhone风格设计：</strong>仿真iPhone界面和交互</li>
+                <li><strong>表情包系统：</strong>丰富的emoji和贴图支持</li>
+                <li><strong>主题定制：</strong>多种界面主题可选</li>
+                <li><strong>响应式布局：</strong>适配不同屏幕尺寸</li>
+              </ul>
+
+              <h3>💬 聊天功能</h3>
+              <ul>
+                <li><strong>消息类型：</strong>文本、表情、图片消息</li>
+                <li><strong>转账红包：</strong>仿真转账和红包功能</li>
+                <li><strong>聊天记录：</strong>本地保存聊天历史</li>
+                <li><strong>多轮对话：</strong>支持上下文连续对话</li>
+              </ul>
+
+              <h3>🔧 系统功能</h3>
+              <ul>
+                <li><strong>数据持久化：</strong>设置和聊天记录本地保存</li>
+                <li><strong>错误处理：</strong>完善的错误提示和恢复</li>
+                <li><strong>性能优化：</strong>流畅的动画和交互体验</li>
+                <li><strong>安全保护：</strong>API密钥安全存储</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- 使用教程 -->
+          <div class="section">
+            <div class="section-header">📖 使用教程</div>
+            <div class="section-content">
+              <h3>🚀 快速开始</h3>
+              <ul>
+                <li><strong>API设置：</strong>点击API设置配置您的AI接口</li>
+                <li><strong>开始聊天：</strong>配置完成后即可开始AI对话</li>
+                <li><strong>QQ功能：</strong>体验仿QQ界面的聊天功能</li>
+                <li><strong>个性化：</strong>在聊天界面设置个人资料和AI角色</li>
+              </ul>
+
+              <h3>💡 功能特色</h3>
+              <ul>
+                <li>仿iPhone界面设计，体验更真实</li>
+                <li>支持多种AI模型接口</li>
+                <li>丰富的表情包和聊天功能</li>
+                <li>个性化角色设定</li>
+                <li>转账、红包等趣味功能</li>
+              </ul>
+
+              <h3>⚙️ 高级功能</h3>
+              <ul>
+                <li>支持自定义系统提示词</li>
+                <li>消息记录本地保存</li>
+                <li>多种聊天模式切换</li>
+                <li>响应式界面适配</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- 反馈渠道 -->
+          <div class="section">
+            <div class="section-header">🐛 问题反馈</div>
+            <div class="section-content">
+              <p><strong>遇到问题？</strong></p>
+              <p>如果您在使用过程中遇到任何问题或有功能建议，欢迎通过以下方式反馈：</p>
+
+              <p><strong>BUG收集表单：</strong></p>
+              <a href="https://docs.qq.com/form/page/DRVdnR05GRmVvamFW" target="_blank" class="bug-link">
+                https://docs.qq.com/form/page/DRVdnR05GRmVvamFW
+              </a>
+
+              <p style="margin-top: 12px"><strong>反馈类型：</strong></p>
+              <ul>
+                <li>功能异常或错误</li>
+                <li>界面显示问题</li>
+                <li>性能优化建议</li>
+                <li>新功能需求</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- 重要声明 -->
+          <div class="section">
+            <div class="section-header">⚠️ 重要声明</div>
+            <div class="section-content">
+              <div class="warning-text">
+                <p><strong>📢 使用须知：</strong></p>
+                <ul style="margin-left: 0; padding-left: 16px">
+                  <li><strong>禁止二改和二传</strong> - 不得修改源码后重新发布</li>
+                  <li><strong>禁止商业化</strong> - 本作品仅供学习交流使用</li>
+                  <li><strong>禁止倒卖</strong> - 不得以任何形式进行商业销售</li>
+                  <li><strong>公益性质</strong> - 本作品完全免费，纯公益分享</li>
+                </ul>
+                <p style="margin-top: 12px"><strong>感谢您的理解与支持！</strong></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 版权信息 -->
+          <div class="section">
+            <div class="section-header">©️ 版权信息</div>
+            <div class="section-content">
+              <p style="text-align: center; color: #999; font-size: 14px">
+                © 2025 baobaoyu<br />
+                All rights reserved for non-commercial use
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 更新状态栏时间
+      function updateTime() {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const timeString = `${hours}:${minutes}`;
+
+        const timeElement = document.getElementById('currentTime');
+        if (timeElement) {
+          timeElement.textContent = timeString;
+        }
+      }
+
+      // 返回到主页
+      function goToIndex() {
+        window.location.href = './index.html';
+      }
+
+      // 页面加载完成后的初始化
+      document.addEventListener('DOMContentLoaded', function () {
+        console.log('设置页面加载完成');
+
+        // 立即更新时间
+        updateTime();
+
+        // 每分钟更新一次时间
+        setInterval(updateTime, 60000);
+
+        // 添加点击外部链接的确认
+        document.querySelectorAll('a[target="_blank"]').forEach(link => {
+          link.addEventListener('click', function (e) {
+            if (!confirm('即将打开外部链接，是否继续？')) {
+              e.preventDefault();
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

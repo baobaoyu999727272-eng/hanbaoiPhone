@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>转账</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, Arial,
+          sans-serif;
+        background: linear-gradient(135deg, #4caf50 0%, #45a049 50%, #2e7d32 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: backgroundShift 10s ease-in-out infinite;
+      }
+
+      @keyframes backgroundShift {
+        0%,
+        100% {
+          background: linear-gradient(135deg, #4caf50 0%, #45a049 50%, #2e7d32 100%);
+        }
+        33% {
+          background: linear-gradient(135deg, #2e7d32 0%, #388e3c 50%, #4caf50 100%);
+        }
+        66% {
+          background: linear-gradient(135deg, #45a049 0%, #4caf50 50%, #388e3c 100%);
+        }
+      }
+
+      .iphone-frame {
+        width: 390px;
+        height: 844px;
+        border-radius: 54px;
+        background: linear-gradient(180deg, #0f1724 0%, #0b1220 60%);
+        border: none;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), inset 0 -6px 20px rgba(0, 0, 0, 0.6),
+          0 8px 30px rgba(2, 6, 23, 0.55);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .screen {
+        width: 370px;
+        height: 804px;
+        border-radius: 44px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        position: relative;
+        overflow: hidden;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+        padding: 60px 20px 30px;
+        color: white;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        animation: headerShine 3s ease-in-out infinite;
+      }
+
+      @keyframes headerShine {
+        0%,
+        100% {
+          transform: translateX(-100%) translateY(-100%) rotate(45deg);
+        }
+        50% {
+          transform: translateX(100%) translateY(100%) rotate(45deg);
+        }
+      }
+
+      .back-btn {
+        position: absolute;
+        left: 20px;
+        top: 50px;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        transition: all 0.2s ease;
+        z-index: 10;
+      }
+
+      .back-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.05);
+      }
+
+      .title {
+        font-size: 22px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        position: relative;
+        z-index: 2;
+      }
+
+      .subtitle {
+        font-size: 14px;
+        opacity: 0.9;
+        position: relative;
+        z-index: 2;
+      }
+
+      .transfer-icon {
+        font-size: 60px;
+        margin: 20px 0;
+        display: block;
+        position: relative;
+        z-index: 2;
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+      }
+
+      .main-content {
+        padding: 20px 30px 30px 30px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        overflow-y: auto;
+        min-height: 0;
+      }
+
+      .input-group {
+        position: relative;
+      }
+
+      .input-label {
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 12px;
+        display: block;
+      }
+
+      .input-field {
+        width: 100%;
+        padding: 16px 20px;
+        border: 2px solid #e0e0e0;
+        border-radius: 16px;
+        font-size: 18px;
+        background: white;
+        transition: all 0.3s ease;
+        outline: none;
+      }
+
+      .input-field:focus {
+        border-color: #4caf50;
+        box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
+        transform: translateY(-1px);
+      }
+
+      .amount-input {
+        text-align: center;
+        font-size: 32px;
+        font-weight: 600;
+        color: #4caf50;
+        padding: 24px 20px;
+      }
+
+      .amount-input::placeholder {
+        color: #bbb;
+        font-weight: 400;
+      }
+
+      .message-input {
+        min-height: 120px;
+        resize: vertical;
+        font-family: inherit;
+        line-height: 1.5;
+      }
+
+      .quick-amounts {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .quick-amount {
+        background: #f8f9fa;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 12px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 16px;
+        font-weight: 500;
+        color: #666;
+      }
+
+      .quick-amount:hover {
+        background: #4caf50;
+        border-color: #4caf50;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+      }
+
+      .confirm-btn {
+        background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+        border: none;
+        color: white;
+        padding: 16px 40px;
+        border-radius: 24px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+        margin: 15px 0 10px 0;
+        width: 100%;
+      }
+
+      .confirm-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+      }
+
+      .confirm-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+      }
+
+      .confirm-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .currency-symbol {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 24px;
+        color: #4caf50;
+        font-weight: 600;
+        pointer-events: none;
+      }
+
+      .transfer-tips {
+        background: rgba(76, 175, 80, 0.1);
+        border-radius: 12px;
+        padding: 12px;
+        margin-top: 10px;
+      }
+
+      .transfer-tips h4 {
+        color: #4caf50;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .transfer-tips ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .transfer-tips li {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 4px;
+        padding-left: 16px;
+        position: relative;
+      }
+
+      .transfer-tips li::before {
+        content: '•';
+        color: #4caf50;
+        position: absolute;
+        left: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="iphone-frame">
+      <div class="screen">
+        <div class="header">
+          <button class="back-btn" onclick="goBack()">←</button>
+          <span class="transfer-icon">💸</span>
+          <div class="title">转账给好友</div>
+          <div class="subtitle">安全便捷的转账体验</div>
+        </div>
+
+        <div class="main-content">
+          <div class="input-group">
+            <label class="input-label">转账金额</label>
+            <div style="position: relative">
+              <span class="currency-symbol">¥</span>
+              <input
+                type="number"
+                id="transferAmount"
+                class="input-field amount-input"
+                placeholder="0.00"
+                min="0.01"
+                max="10000"
+                step="0.01"
+                style="padding-left: 50px"
+              />
+            </div>
+            <div class="quick-amounts">
+              <div class="quick-amount" onclick="setAmount('50')">¥50</div>
+              <div class="quick-amount" onclick="setAmount('100')">¥100</div>
+              <div class="quick-amount" onclick="setAmount('200')">¥200</div>
+              <div class="quick-amount" onclick="setAmount('500')">¥500</div>
+              <div class="quick-amount" onclick="setAmount('1000')">¥1000</div>
+              <div class="quick-amount" onclick="setAmount('2000')">¥2000</div>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">转账说明（可选）</label>
+            <textarea
+              id="transferMessage"
+              class="input-field message-input"
+              placeholder="写点什么吧，比如：还你钱、聚餐费用等..."
+              maxlength="100"
+            ></textarea>
+          </div>
+
+          <button class="confirm-btn" onclick="confirmTransfer()">确认转账</button>
+
+          <div class="transfer-tips">
+            <h4>转账提示</h4>
+            <ul>
+              <li>转账金额范围：0.01元 - 10,000元</li>
+              <li>转账即时到账，请确认收款人信息</li>
+              <li>转账完成后可在聊天记录中查看</li>
+              <li>如有疑问请及时联系客服</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 获取chatId参数
+      function getChatId() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const chatId = urlParams.get('chatId');
+        console.log('转账页面 - 获取到的chatId:', chatId);
+        return chatId;
+      }
+
+      // 返回聊天页面
+      function goBack() {
+        const chatId = getChatId();
+        const url =
+          'chat.html' + (chatId ? '?chatId=' + encodeURIComponent(chatId) + '&fromTransfer=1' : '?fromTransfer=1');
+        console.log('转账页面 - 返回URL:', url);
+        window.location.href = url;
+      }
+
+      // 设置快捷金额
+      function setAmount(amount) {
+        document.getElementById('transferAmount').value = amount;
+        updateAmountDisplay();
+      }
+
+      // 更新金额显示
+      function updateAmountDisplay() {
+        const amountInput = document.getElementById('transferAmount');
+        const amount = parseFloat(amountInput.value);
+
+        if (amount && amount > 0) {
+          amountInput.style.color = '#4CAF50';
+          document.querySelector('.confirm-btn').disabled = false;
+        } else {
+          amountInput.style.color = '#bbb';
+          document.querySelector('.confirm-btn').disabled = true;
+        }
+      }
+
+      // 确认转账
+      function confirmTransfer() {
+        const amount = document.getElementById('transferAmount').value.trim();
+        let message = document.getElementById('transferMessage').value.trim();
+
+        console.log('=== 确认转账 ===');
+        console.log('输入的金额:', amount);
+        console.log('输入的说明:', message);
+
+        if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+          console.log('金额无效，焦点到金额输入框');
+          document.getElementById('transferAmount').focus();
+          alert('请输入有效的转账金额');
+          return;
+        }
+
+        if (parseFloat(amount) > 10000) {
+          alert('转账金额不能超过10,000元');
+          return;
+        }
+
+        if (!message) {
+          message = '转账';
+          console.log('使用默认说明:', message);
+        }
+
+        const chatId = getChatId();
+        const transferData = {
+          amount: parseFloat(amount).toFixed(2),
+          message,
+          chatId: chatId,
+          timestamp: new Date().toISOString(),
+        };
+
+        console.log('准备保存的转账数据:', transferData);
+        localStorage.setItem('transferData', JSON.stringify(transferData));
+        console.log('转账数据已保存到localStorage');
+
+        // 立即返回聊天页面
+        goBack();
+      }
+
+      // 监听金额输入变化
+      document.getElementById('transferAmount').addEventListener('input', updateAmountDisplay);
+      document.getElementById('transferAmount').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') confirmTransfer();
+      });
+      document.getElementById('transferMessage').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && e.ctrlKey) confirmTransfer();
+      });
+
+      // 页面加载完成后显示调试信息
+      window.addEventListener('load', function () {
+        console.log('转账页面加载完成');
+        console.log('当前URL:', window.location.href);
+        console.log('获取到的chatId:', getChatId());
+        updateAmountDisplay();
+      });
+    </script>
+  </body>
+</html>

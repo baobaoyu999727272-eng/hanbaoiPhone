@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>API设置</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, Arial,
+          sans-serif;
+        background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .iphone-frame {
+        width: 390px;
+        height: 844px;
+        border-radius: 54px;
+        background: linear-gradient(180deg, #fbfdff 0%, #e9eef6 50%, #dfe6ef 100%);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -6px 18px rgba(0, 0, 0, 0.06),
+          0 12px 36px rgba(20, 30, 48, 0.12);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .screen {
+        width: 370px;
+        height: 804px;
+        border-radius: 44px;
+        background: linear-gradient(135deg, #60aaff 0%, #b8e0ff 100%);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 20px;
+      }
+      /* 灵动岛 */
+      .dynamic-island {
+        position: absolute;
+        top: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 36px;
+        background: #0b0b0b;
+        border-radius: 18px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+        z-index: 10;
+      }
+      /* 状态栏 */
+      .status-bar {
+        position: absolute;
+        top: 6px;
+        left: 0;
+        width: 100%;
+        height: 48px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding: 6px 18px;
+        color: #fff;
+        font-size: 15px;
+        pointer-events: none;
+      }
+      .status-left {
+        font-weight: 600;
+      }
+      .status-right {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      /* 标题栏 */
+      .header {
+        margin-top: 70px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .back-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: #fff;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 150ms ease;
+      }
+      .back-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+      .title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #fff;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      /* 内容区 */
+      .content {
+        flex: 1;
+        overflow-y: auto;
+        padding-bottom: 20px;
+      }
+      .api-section {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        margin-bottom: 20px;
+        padding: 20px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      }
+      .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .form-group {
+        margin-bottom: 16px;
+      }
+      .form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 6px;
+      }
+      .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.9);
+        font-size: 16px;
+        color: #333;
+        transition: all 150ms ease;
+      }
+      .form-input:focus {
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.6);
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+      }
+      .form-input::placeholder {
+        color: rgba(0, 0, 0, 0.4);
+      }
+      .form-select {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.9);
+        font-size: 16px;
+        color: #333;
+        cursor: pointer;
+      }
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.3);
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+      .slider:before {
+        position: absolute;
+        content: '';
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: #4caf50;
+      }
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+      .test-btn {
+        background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 12px 20px;
+        color: white;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 150ms ease;
+        margin-top: 8px;
+      }
+      .test-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3);
+      }
+      .save-btn {
+        background: linear-gradient(135deg, #6c5ce7 0%, #5a4fcf 100%);
+        border: none;
+        border-radius: 16px;
+        padding: 16px 32px;
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 150ms ease;
+        width: 100%;
+        margin-top: 20px;
+      }
+      .save-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(108, 92, 231, 0.3);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="iphone-frame">
+      <div class="screen">
+        <div class="dynamic-island"></div>
+        <div class="status-bar">
+          <div class="status-left" id="currentTime">13:28</div>
+          <div class="status-right"><span>📶</span><span>📡</span><span>🔋</span><span>100%</span></div>
+        </div>
+
+        <div class="header">
+          <button class="back-btn" onclick="history.back()">←</button>
+          <h1 class="title">API设置</h1>
+        </div>
+
+        <div class="content">
+          <!-- OpenAI API 配置 -->
+          <div class="api-section">
+            <h2 class="section-title">🤖 OpenAI API</h2>
+
+            <div class="form-group">
+              <label class="form-label">启用 OpenAI API</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="openai-enabled" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="openai-url">API 地址</label>
+              <input type="url" id="openai-url" class="form-input" placeholder="https://你的newapi服务器地址" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="openai-key">API 密钥</label>
+              <input type="password" id="openai-key" class="form-input" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="openai-model">默认模型</label>
+              <select id="openai-model" class="form-select">
+                <option value="">请先测试连接以获取可用模型</option>
+              </select>
+            </div>
+
+            <button class="test-btn" onclick="testOpenAI()">测试连接</button>
+          </div>
+
+          <!-- Google Gemini API 配置 -->
+          <div class="api-section">
+            <h2 class="section-title">💎 Google Gemini API</h2>
+
+            <div class="form-group">
+              <label class="form-label">启用 Gemini API</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="gemini-enabled" />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="gemini-url">API 地址</label>
+              <input type="url" id="gemini-url" class="form-input" placeholder="https://你的newapi服务器地址" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="gemini-key">API 密钥</label>
+              <input type="password" id="gemini-key" class="form-input" placeholder="AIzaSyxxxxxxxxxxxxxxxxxxxxxxxx" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="gemini-model">默认模型</label>
+              <select id="gemini-model" class="form-select">
+                <option value="">请先测试连接以获取可用模型</option>
+              </select>
+            </div>
+
+            <button class="test-btn" onclick="testGemini()">测试连接</button>
+          </div>
+
+          <button class="save-btn" onclick="saveSettings()">保存设置</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 加载保存的设置
+      function loadSettings() {
+        const settings = JSON.parse(localStorage.getItem('apiSettings') || '{}');
+
+        // OpenAI 设置
+        if (settings.openai) {
+          document.getElementById('openai-enabled').checked = settings.openai.enabled !== false;
+          document.getElementById('openai-url').value = settings.openai.url || '';
+          document.getElementById('openai-key').value = settings.openai.key || '';
+
+          // 初始化模型选择框，显示提示
+          const modelSelect = document.getElementById('openai-model');
+          if (settings.openai.model) {
+            modelSelect.innerHTML = `<option value="${settings.openai.model}">${settings.openai.model} (已保存)</option>`;
+            modelSelect.value = settings.openai.model;
+          } else {
+            modelSelect.innerHTML = '<option value="">请先测试连接以获取模型列表</option>';
+          }
+        } else {
+          // 如果没有设置，显示提示
+          const modelSelect = document.getElementById('openai-model');
+          modelSelect.innerHTML = '<option value="">请先测试连接以获取模型列表</option>';
+        }
+
+        // Gemini 设置
+        if (settings.gemini) {
+          document.getElementById('gemini-enabled').checked = settings.gemini.enabled || false;
+          document.getElementById('gemini-url').value = settings.gemini.url || '';
+          document.getElementById('gemini-key').value = settings.gemini.key || '';
+          if (settings.gemini.model) {
+            // 如果有保存的模型，先添加到选择框中
+            const modelSelect = document.getElementById('gemini-model');
+            modelSelect.innerHTML = `<option value="${settings.gemini.model}">${settings.gemini.model}</option>`;
+            modelSelect.value = settings.gemini.model;
+          }
+        }
+      }
+
+      // 保存设置
+      function saveSettings() {
+        const openaiEnabled = document.getElementById('openai-enabled').checked;
+        const geminiEnabled = document.getElementById('gemini-enabled').checked;
+
+        const settings = {
+          openai: {
+            enabled: openaiEnabled,
+            url: document.getElementById('openai-url').value,
+            key: document.getElementById('openai-key').value,
+            model: document.getElementById('openai-model').value,
+          },
+          gemini: {
+            enabled: geminiEnabled,
+            url: document.getElementById('gemini-url').value,
+            key: document.getElementById('gemini-key').value,
+            model: document.getElementById('gemini-model').value,
+          },
+        };
+
+        // 自动设置选中的服务
+        if (openaiEnabled && settings.openai.key) {
+          settings.selectedService = 'openai';
+        } else if (geminiEnabled && settings.gemini.key) {
+          settings.selectedService = 'gemini';
+        }
+
+        localStorage.setItem('apiSettings', JSON.stringify(settings));
+
+        // 显示保存成功提示
+        const btn = document.querySelector('.save-btn');
+        const originalText = btn.textContent;
+        btn.textContent = '已保存 ✓';
+        btn.style.background = 'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)';
+
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.background = 'linear-gradient(135deg, #6c5ce7 0%, #5a4fcf 100%)';
+        }, 2000);
+      }
+
+      // 测试 OpenAI 连接
+      async function testOpenAI() {
+        const url = document.getElementById('openai-url').value;
+        const key = document.getElementById('openai-key').value;
+
+        if (!url || !key) {
+          alert('请填写完整的 API 地址和密钥');
+          return;
+        }
+
+        const btn = event.target;
+        btn.textContent = '测试中...';
+        btn.disabled = true;
+
+        try {
+          const baseUrl = url.replace(/\/$/, '');
+          console.log('测试API地址:', baseUrl);
+          console.log('API密钥长度:', key.length);
+
+          // 首先尝试获取模型列表
+          const modelSelect = document.getElementById('openai-model');
+          modelSelect.innerHTML = '<option value="">正在获取模型列表...</option>';
+
+          let availableModels = [];
+          let testModel = 'gpt-3.5-turbo'; // 默认测试模型
+
+          try {
+            console.log('尝试获取模型列表...');
+            const modelsResponse = await fetch(`${baseUrl}/v1/models`, {
+              method: 'GET',
+              headers: {
+                Authorization: `Bearer ${key}`,
+                'Content-Type': 'application/json',
+              },
+            });
+
+            console.log('模型列表响应状态:', modelsResponse.status);
+            if (modelsResponse.ok) {
+              const modelsData = await modelsResponse.json();
+              console.log('获取到的模型数据:', modelsData);
+              if (modelsData.data && Array.isArray(modelsData.data) && modelsData.data.length > 0) {
+                availableModels = modelsData.data.map(model => model.id);
+                testModel = availableModels[0]; // 使用第一个可用模型进行测试
+                console.log('可用模型:', availableModels);
+                console.log('选择测试模型:', testModel);
+              }
+            } else {
+              const errorText = await modelsResponse.text();
+              console.log('获取模型列表失败:', modelsResponse.status, errorText);
+            }
+          } catch (e) {
+            console.error('获取模型列表异常:', e);
+            console.log('获取模型列表失败，使用默认模型测试连接');
+          }
+
+          // 使用获取到的第一个模型或默认模型测试连接
+          console.log('开始测试连接，使用模型:', testModel);
+          const testResponse = await fetch(`${baseUrl}/v1/chat/completions`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${key}`,
+            },
+            body: JSON.stringify({
+              model: testModel,
+              messages: [
+                { role: 'system', content: '你是一个有帮助的助手。' },
+                { role: 'user', content: '你好！请简单回复。' },
+              ],
+              max_tokens: 50,
+              temperature: 0.7,
+            }),
+          });
+
+          console.log('测试连接响应状态:', testResponse.status);
+          if (!testResponse.ok) {
+            const errorData = await testResponse.json().catch(async () => {
+              const errorText = await testResponse.text();
+              return { error: { message: errorText } };
+            });
+            console.error('连接测试失败:', errorData);
+            throw new Error(`连接失败 ${testResponse.status}: ${errorData.error?.message || testResponse.statusText}`);
+          }
+
+          const testData = await testResponse.json();
+          console.log('测试连接成功，响应数据:', testData);
+
+          // 连接成功，更新按钮状态
+          btn.textContent = '连接成功 ✓';
+          btn.style.background = 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)';
+
+          // 显示成功状态
+          let statusDiv = document.getElementById('test-status');
+          if (statusDiv) {
+            statusDiv.textContent = `✓ 连接测试成功！\n使用模型: ${testModel}\n可用模型: ${
+              availableModels.length > 0 ? availableModels.length + ' 个' : '使用默认列表'
+            }`;
+            statusDiv.style.background = 'rgba(76, 175, 80, 0.2)';
+          }
+
+          // 连接成功，填充模型列表
+          modelSelect.innerHTML = '';
+
+          if (availableModels.length > 0) {
+            availableModels.forEach(modelId => {
+              const option = document.createElement('option');
+              option.value = modelId;
+              option.textContent = modelId;
+              modelSelect.appendChild(option);
+            });
+            // 默认选择测试成功的模型
+            modelSelect.value = testModel;
+          } else {
+            // 如果无法获取模型列表，使用常见模型并标注测试成功的模型
+            addCommonOpenAIModels(modelSelect);
+            // 如果测试模型在常见模型中，选中它
+            if ([...modelSelect.options].some(opt => opt.value === testModel)) {
+              modelSelect.value = testModel;
+            }
+          }
+
+          // 保存连接成功的状态
+          const saved = JSON.parse(localStorage.getItem('apiSettings') || '{}');
+          if (!saved.openai) saved.openai = {};
+          saved.openai.endpoint = 'chat'; // 标记为 chat completions 兼容
+          saved.openai.enabled = true; // 自动启用
+          saved.openai.url = url;
+          saved.openai.key = key;
+          saved.openai.model = testModel;
+          saved.selectedService = 'openai'; // 设置为选中的服务
+          localStorage.setItem('apiSettings', JSON.stringify(saved));
+
+          // 同步更新界面状态
+          document.getElementById('openai-enabled').checked = true;
+
+          btn.textContent = '连接成功 ✓';
+          btn.style.background = 'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)';
+        } catch (error) {
+          console.error('API测试失败，详细错误:', error);
+          btn.textContent = '连接失败 ✗';
+          btn.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)';
+
+          // 显示失败状态
+          let statusDiv = document.getElementById('test-status');
+          if (statusDiv) {
+            statusDiv.textContent = `✗ 连接测试失败\n错误: ${error.message}`;
+            statusDiv.style.background = 'rgba(255, 107, 107, 0.2)';
+          }
+
+          // 连接失败时清空模型列表
+          const modelSelect = document.getElementById('openai-model');
+          modelSelect.innerHTML = '<option value="">连接失败，无可用模型</option>';
+
+          // 提供更详细的错误信息
+          let errorMessage = '连接失败';
+          if (error.message.includes('Failed to fetch')) {
+            errorMessage = '网络连接失败，请检查：\n1. API地址是否正确\n2. 网络连接是否正常\n3. 是否存在防火墙阻止';
+          } else if (error.message.includes('401')) {
+            errorMessage = 'API密钥无效，请检查密钥是否正确';
+          } else if (error.message.includes('403')) {
+            errorMessage = 'API访问被拒绝，请检查密钥权限';
+          } else if (error.message.includes('404')) {
+            errorMessage = 'API地址不存在，请检查地址是否正确';
+          } else if (error.message.includes('429')) {
+            errorMessage = 'API调用频率超限，请稍后重试';
+          } else if (error.message.includes('500')) {
+            errorMessage = 'API服务器内部错误，请稍后重试';
+          } else {
+            errorMessage = `连接失败: ${error.message}`;
+          }
+
+          setTimeout(() => alert(errorMessage), 100);
+        } finally {
+          // 恢复按钮状态
+          btn.disabled = false;
+        }
+
+        setTimeout(() => {
+          btn.textContent = '测试连接';
+          btn.style.background = 'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)';
+          btn.disabled = false;
+        }, 3000);
+      }
+
+      // 添加常见的OpenAI模型
+      function addCommonOpenAIModels(modelSelect) {
+        const commonModels = [
+          'gpt-4.1',
+          'gpt-4.1-mini',
+          'gpt-4o',
+          'gpt-4o-mini',
+          'gpt-4-turbo',
+          'gpt-4',
+          'gpt-3.5-turbo',
+        ];
+        commonModels.forEach(modelName => {
+          const option = document.createElement('option');
+          option.value = modelName;
+          option.textContent = modelName;
+          modelSelect.appendChild(option);
+        });
+      }
+
+      // 测试 Gemini 连接
+      async function testGemini() {
+        const url = document.getElementById('gemini-url').value;
+        const key = document.getElementById('gemini-key').value;
+
+        if (!url || !key) {
+          alert('请填写完整的 API 地址和密钥');
+          return;
+        }
+
+        const btn = event.target;
+        btn.textContent = '测试中...';
+        btn.disabled = true;
+
+        try {
+          // 去掉末尾的斜杠
+          const baseUrl = url.replace(/\/$/, '');
+
+          let response;
+          let isNewApiFormat = false;
+
+          // 先检查是否是newapi等代理服务（使用OpenAI兼容格式）
+          try {
+            response = await fetch(`${baseUrl}/v1/models`, {
+              method: 'GET',
+              headers: {
+                Authorization: `Bearer ${key}`,
+                'Content-Type': 'application/json',
+              },
+            });
+
+            if (response.ok) {
+              isNewApiFormat = true;
+            }
+          } catch (error) {
+            // 忽略错误，继续尝试原生Gemini API
+          }
+
+          // 如果不是newapi格式，尝试原生Gemini API
+          if (!isNewApiFormat) {
+            try {
+              response = await fetch(`${baseUrl}/v1beta/models?key=${key}`, {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+            } catch (error) {
+              // 如果原生API也失败，尝试简单的生成请求
+              response = await fetch(`${baseUrl}/v1beta/models/gemini-pro:generateContent?key=${key}`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: 'test' }] }],
+                }),
+              });
+            }
+          }
+
+          if (response.ok) {
+            const data = await response.json();
+
+            // 更新模型选择框
+            const modelSelect = document.getElementById('gemini-model');
+            modelSelect.innerHTML = '';
+
+            if (isNewApiFormat && data.data && Array.isArray(data.data)) {
+              // newapi格式的响应
+              const models = data.data;
+              if (models.length > 0) {
+                models.forEach(model => {
+                  const option = document.createElement('option');
+                  option.value = model.id;
+                  option.textContent = model.id;
+                  modelSelect.appendChild(option);
+                });
+                modelSelect.selectedIndex = 0;
+              } else {
+                addCommonGeminiModels(modelSelect);
+              }
+            } else if (data.models && Array.isArray(data.models)) {
+              // 原生Gemini API格式的响应
+              const models = data.models;
+              if (models.length > 0) {
+                models.forEach(model => {
+                  const modelName = model.name.replace('models/', '');
+                  const option = document.createElement('option');
+                  option.value = modelName;
+                  option.textContent = modelName;
+                  modelSelect.appendChild(option);
+                });
+                modelSelect.selectedIndex = 0;
+              } else {
+                addCommonGeminiModels(modelSelect);
+              }
+            } else {
+              // 如果是生成内容的响应，说明连接成功
+              addCommonGeminiModels(modelSelect);
+            }
+
+            btn.textContent = '连接成功 ✓';
+            btn.style.background = 'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)';
+
+            // 保存连接成功的状态
+            const saved = JSON.parse(localStorage.getItem('apiSettings') || '{}');
+            if (!saved.gemini) saved.gemini = {};
+            saved.gemini.enabled = true; // 自动启用
+            saved.gemini.url = url;
+            saved.gemini.key = key;
+            saved.gemini.model = modelSelect.value || 'gemini-1.5-pro';
+            saved.selectedService = 'gemini'; // 设置为选中的服务
+            localStorage.setItem('apiSettings', JSON.stringify(saved));
+
+            // 同步更新界面状态
+            document.getElementById('gemini-enabled').checked = true;
+          } else {
+            const errorText = await response.text();
+            console.error('Gemini API Error:', response.status, errorText);
+            btn.textContent = '连接失败 ✗';
+            btn.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)';
+
+            // 连接失败时清空模型列表
+            const modelSelect = document.getElementById('gemini-model');
+            modelSelect.innerHTML = '<option value="">连接失败，无可用模型</option>';
+
+            // 显示更详细的错误信息
+            setTimeout(() => {
+              alert(`连接失败: ${response.status} - ${response.statusText}`);
+            }, 100);
+          }
+        } catch (error) {
+          console.error('Network Error:', error);
+          btn.textContent = '连接失败 ✗';
+          btn.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)';
+
+          // 连接失败时清空模型列表
+          const modelSelect = document.getElementById('gemini-model');
+          modelSelect.innerHTML = '<option value="">连接失败，无可用模型</option>';
+
+          // 显示网络错误信息
+          setTimeout(() => {
+            alert(`网络错误: ${error.message}`);
+          }, 100);
+        }
+
+        setTimeout(() => {
+          btn.textContent = '测试连接';
+          btn.style.background = 'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)';
+          btn.disabled = false;
+        }, 3000);
+      }
+
+      // 添加常见的Gemini模型
+      function addCommonGeminiModels(modelSelect) {
+        const commonModels = ['gemini-2.0-flash-exp', 'gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-pro'];
+        commonModels.forEach(modelName => {
+          const option = document.createElement('option');
+          option.value = modelName;
+          option.textContent = modelName;
+          modelSelect.appendChild(option);
+        });
+      }
+
+      // 更新状态栏时间
+      function updateTime() {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const timeString = `${hours}:${minutes}`;
+
+        const timeElement = document.getElementById('currentTime');
+        if (timeElement) {
+          timeElement.textContent = timeString;
+        }
+      }
+
+      // 页面加载时加载设置
+      document.addEventListener('DOMContentLoaded', function () {
+        // 立即更新时间
+        updateTime();
+
+        // 每分钟更新一次时间
+        setInterval(updateTime, 60000);
+
+        // 加载API设置
+        loadSettings();
+      });
+    </script>
+  </body>
+</html>

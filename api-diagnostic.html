@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API诊断工具</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .section {
+        margin-bottom: 30px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+      .section h3 {
+        margin: 0 0 15px 0;
+        color: #333;
+      }
+      .result {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        font-family: monospace;
+        white-space: pre-wrap;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      .button {
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      .button:hover {
+        background: #0056b3;
+      }
+      .status {
+        padding: 5px 10px;
+        border-radius: 3px;
+        margin-left: 10px;
+        font-size: 12px;
+      }
+      .status.success {
+        background: #d4edda;
+        color: #155724;
+      }
+      .status.error {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .status.warning {
+        background: #fff3cd;
+        color: #856404;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔧 API诊断工具</h1>
+      <p>这个工具会帮助你检查API配置是否正确</p>
+
+      <div class="section">
+        <h3>1. API配置检查</h3>
+        <button class="button" onclick="checkAPIConfig()">检查API配置</button>
+        <div id="config-result" class="result"></div>
+      </div>
+
+      <div class="section">
+        <h3>2. API连接测试</h3>
+        <button class="button" onclick="testAPIConnection()">测试API连接</button>
+        <div id="connection-result" class="result"></div>
+      </div>
+
+      <div class="section">
+        <h3>3. 快速修复</h3>
+        <button class="button" onclick="clearAPISettings()">清除API设置</button>
+        <button class="button" onclick="restoreDefaultSettings()">恢复默认设置</button>
+        <button class="button" onclick="openAPISettings()">打开API设置页面</button>
+      </div>
+
+      <div class="section">
+        <h3>4. 聊天记录检查</h3>
+        <button class="button" onclick="checkChatHistory()">检查聊天记录</button>
+        <div id="chat-result" class="result"></div>
+      </div>
+    </div>
+
+    <script>
+      function checkAPIConfig() {
+        const result = document.getElementById('config-result');
+
+        try {
+          const apiSettings = JSON.parse(localStorage.getItem('apiSettings') || '{}');
+
+          let report = '=== API配置检查结果 ===\n\n';
+
+          report += `配置是否存在: ${localStorage.getItem('apiSettings') ? '✅ 是' : '❌ 否'}\n`;
+          report += `选择的服务: ${apiSettings.selectedService || '❌ 未设置'}\n\n`;
+
+          if (apiSettings.selectedService) {
+            const serviceConfig = apiSettings[apiSettings.selectedService];
+            if (serviceConfig) {
+              report += `=== ${apiSettings.selectedService.toUpperCase()} 配置 ===\n`;
+              report += `API密钥: ${
+                serviceConfig.key ? '✅ 已设置 (' + serviceConfig.key.substring(0, 10) + '...)' : '❌ 未设置'
+              }\n`;
+              report += `API地址: ${serviceConfig.url || '使用默认地址'}\n`;
+              report += `模型: ${serviceConfig.model || '使用默认模型'}\n`;
+              report += `温度: ${serviceConfig.temperature || '使用默认值'}\n`;
+              if (serviceConfig.max_tokens) {
+                report += `最大tokens: ${serviceConfig.max_tokens}\n`;
+              }
+            } else {
+              report += `❌ ${apiSettings.selectedService} 服务配置缺失\n`;
+            }
+          }
+
+          // 检查其他可能的配置
+          if (apiSettings.openai) {
+            report += '\n=== OpenAI 配置存在 ===\n';
+          }
+          if (apiSettings.gemini) {
+            report += '\n=== Gemini 配置存在 ===\n';
+          }
+
+          result.textContent = report;
+        } catch (error) {
+          result.textContent = `❌ 检查失败: ${error.message}`;
+        }
+      }
+
+      async function testAPIConnection() {
+        const result = document.getElementById('connection-result');
+        result.textContent = '正在测试API连接...';
+
+        try {
+          const apiSettings = JSON.parse(localStorage.getItem('apiSettings') || '{}');
+
+          if (!apiSettings.selectedService || !apiSettings[apiSettings.selectedService]?.key) {
+            result.textContent = '❌ API未配置，无法测试连接';
+            return;
+          }
+
+          const config = apiSettings[apiSettings.selectedService];
+          let testResult = '=== API连接测试 ===\n\n';
+
+          if (apiSettings.selectedService === 'openai') {
+            const baseUrl = (config.url || 'https://api.openai.com').replace(/\/$/, '');
+            const endpoint = `${baseUrl}/v1/chat/completions`;
+
+            const response = await fetch(endpoint, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${config.key}`,
+              },
+              body: JSON.stringify({
+                model: config.model || 'gpt-3.5-turbo',
+                messages: [{ role: 'user', content: '测试' }],
+                max_tokens: 5,
+              }),
+            });
+
+            testResult += `请求地址: ${endpoint}\n`;
+            testResult += `响应状态: ${response.status} ${response.statusText}\n`;
+
+            if (response.ok) {
+              const data = await response.json();
+              testResult += '✅ 连接成功!\n';
+              testResult += `响应: ${JSON.stringify(data, null, 2)}`;
+            } else {
+              const errorText = await response.text();
+              testResult += `❌ 连接失败: ${errorText}`;
+            }
+          } else if (apiSettings.selectedService === 'gemini') {
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${
+              config.model || 'gemini-pro'
+            }:generateContent?key=${config.key}`;
+
+            const response = await fetch(endpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: '测试' }] }],
+              }),
+            });
+
+            testResult += `请求地址: ${endpoint}\n`;
+            testResult += `响应状态: ${response.status} ${response.statusText}\n`;
+
+            if (response.ok) {
+              const data = await response.json();
+              testResult += '✅ 连接成功!\n';
+              testResult += `响应: ${JSON.stringify(data, null, 2)}`;
+            } else {
+              const errorText = await response.text();
+              testResult += `❌ 连接失败: ${errorText}`;
+            }
+          }
+
+          result.textContent = testResult;
+        } catch (error) {
+          result.textContent = `❌ 测试失败: ${error.message}`;
+        }
+      }
+
+      function clearAPISettings() {
+        localStorage.removeItem('apiSettings');
+        alert('API设置已清除！请重新配置。');
+      }
+
+      function restoreDefaultSettings() {
+        const defaultSettings = {
+          selectedService: 'openai',
+          openai: {
+            key: '',
+            url: 'https://api.openai.com',
+            model: 'gpt-3.5-turbo',
+            temperature: '0.7',
+          },
+        };
+        localStorage.setItem('apiSettings', JSON.stringify(defaultSettings));
+        alert('已恢复默认设置！请在API设置中填入你的API密钥。');
+      }
+
+      function openAPISettings() {
+        window.open('api.html', '_blank');
+      }
+
+      function checkChatHistory() {
+        const result = document.getElementById('chat-result');
+
+        try {
+          let report = '=== 聊天记录检查 ===\n\n';
+
+          // 检查当前聊天信息
+          const currentChatInfo = localStorage.getItem('currentChatInfo');
+          report += `当前聊天信息: ${currentChatInfo ? '存在' : '不存在'}\n`;
+
+          if (currentChatInfo) {
+            const chatInfo = JSON.parse(currentChatInfo);
+            report += `聊天ID: ${chatInfo.id}\n`;
+            report += `聊天类型: ${chatInfo.type}\n`;
+
+            // 检查聊天历史
+            const chatHistory = localStorage.getItem(`chatHistory_${chatInfo.id}`);
+            if (chatHistory) {
+              const messages = JSON.parse(chatHistory);
+              report += `消息数量: ${messages.length}\n`;
+
+              if (messages.length > 0) {
+                const lastMessage = messages[messages.length - 1];
+                report += `最后消息: ${lastMessage.sender} - ${lastMessage.text.substring(0, 50)}...\n`;
+              }
+            } else {
+              report += '聊天历史: 无\n';
+            }
+          }
+
+          // 检查设置
+          const chatSettings = localStorage.getItem('chatSettings');
+          report += `\n聊天设置: ${chatSettings ? '存在' : '不存在'}\n`;
+
+          result.textContent = report;
+        } catch (error) {
+          result.textContent = `❌ 检查失败: ${error.message}`;
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>发红包</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, Arial,
+          sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #a1c4fd 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: backgroundShift 10s ease-in-out infinite;
+      }
+
+      @keyframes backgroundShift {
+        0%,
+        100% {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #a1c4fd 100%);
+        }
+        33% {
+          background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 50%, #667eea 100%);
+        }
+        66% {
+          background: linear-gradient(135deg, #764ba2 0%, #667eea 50%, #c2e9fb 100%);
+        }
+      }
+      .iphone-frame {
+        width: 390px;
+        height: 844px;
+        border-radius: 54px;
+        background: linear-gradient(180deg, #0f1724 0%, #0b1220 60%);
+        border: none;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), inset 0 -6px 20px rgba(0, 0, 0, 0.6),
+          0 8px 30px rgba(2, 6, 23, 0.55);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .screen {
+        width: 370px;
+        height: 804px;
+        border-radius: 44px;
+        background: #f7f7f7;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .dynamic-island {
+        position: absolute;
+        top: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 36px;
+        background: #0b0b0b;
+        border-radius: 18px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+        z-index: 10;
+      }
+      .status-bar {
+        position: absolute;
+        top: 6px;
+        left: 0;
+        width: 100%;
+        height: 48px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding: 6px 18px;
+        color: #000;
+        font-size: 15px;
+        font-weight: 600;
+        pointer-events: none;
+        z-index: 5;
+      }
+      .status-left {
+        font-weight: 600;
+      }
+      .status-right {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        color: #00d4aa;
+      }
+      /* 转账界面样式 */
+      .transfer-root {
+        min-height: 100%;
+        background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%);
+        position: relative;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .transfer-header {
+        display: flex;
+        align-items: center;
+        height: 60px;
+        background: transparent;
+        margin-top: 54px;
+        padding: 0 16px;
+      }
+
+      .transfer-back {
+        background: none;
+        border: none;
+        font-size: 20px;
+        color: white;
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        transition: background 0.2s;
+      }
+
+      .transfer-back:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .transfer-title {
+        flex: 1;
+        text-align: center;
+        font-size: 18px;
+        font-weight: 600;
+        color: white;
+        margin-right: 32px;
+      }
+
+      .transfer-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        position: relative;
+      }
+
+      .transfer-icon {
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 50px;
+        margin-bottom: 30px;
+        animation: transferPulse 2s ease-in-out infinite;
+      }
+
+      @keyframes transferPulse {
+        0%,
+        100% {
+          transform: scale(1);
+          box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+        50% {
+          transform: scale(1.05);
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+      }
+
+      .transfer-label {
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .transfer-amount-container {
+        position: relative;
+        margin-bottom: 30px;
+      }
+
+      .transfer-amount {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 48px;
+        font-weight: 700;
+        text-align: center;
+        outline: none;
+        width: 300px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .transfer-amount::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .transfer-currency {
+        position: absolute;
+        left: -30px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: white;
+        font-size: 32px;
+        font-weight: 600;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .transfer-bless-container {
+        margin-bottom: 40px;
+        width: 100%;
+        max-width: 300px;
+      }
+
+      .transfer-bless {
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 25px;
+        padding: 12px 20px;
+        color: white;
+        font-size: 16px;
+        text-align: center;
+        outline: none;
+        width: 100%;
+        backdrop-filter: blur(10px);
+      }
+
+      .transfer-bless::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .transfer-send-btn {
+        background: rgba(255, 255, 255, 0.9);
+        color: #ff6b6b;
+        border: none;
+        border-radius: 25px;
+        padding: 16px 60px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        margin-bottom: 20px;
+      }
+
+      .transfer-send-btn:hover {
+        background: white;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+      }
+
+      .transfer-tip {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 14px;
+        text-align: center;
+        max-width: 280px;
+        line-height: 1.4;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      /* 装饰元素 */
+      .transfer-decoration {
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        animation: decorationFloat 6s ease-in-out infinite;
+      }
+
+      .transfer-decoration:nth-child(1) {
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+      }
+
+      .transfer-decoration:nth-child(2) {
+        bottom: 20%;
+        right: 10%;
+        animation-delay: 2s;
+      }
+
+      @keyframes decorationFloat {
+        0%,
+        100% {
+          transform: translateY(0px) rotate(0deg);
+        }
+        50% {
+          transform: translateY(-20px) rotate(180deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="iphone-frame">
+      <div class="screen">
+        <div class="dynamic-island"></div>
+        <div class="status-bar">
+          <div class="status-left">9:41</div>
+          <div class="status-right">
+            <span>📶</span>
+            <span>📡</span>
+            <span style="color: #00d4aa">100%</span>
+            <span style="color: #00d4aa">🔋</span>
+          </div>
+        </div>
+        <div class="transfer-root">
+          <div class="transfer-decoration"></div>
+          <div class="transfer-decoration"></div>
+
+          <div class="transfer-header">
+            <button class="transfer-back" onclick="goBack()">‹</button>
+            <span class="transfer-title">发红包</span>
+          </div>
+
+          <div class="transfer-content">
+            <div class="transfer-icon">🧧</div>
+
+            <div class="transfer-label">红包金额</div>
+
+            <div class="transfer-amount-container">
+              <span class="transfer-currency">¥</span>
+              <input
+                id="redPacketAmount"
+                class="transfer-amount"
+                type="number"
+                min="0.01"
+                step="0.01"
+                placeholder="0.00"
+                oninput="updateBigAmount()"
+              />
+            </div>
+
+            <div class="transfer-bless-container">
+              <input
+                id="redPacketBless"
+                class="transfer-bless"
+                type="text"
+                maxlength="20"
+                placeholder="恭喜发财，大吉大利！"
+              />
+            </div>
+
+            <button class="transfer-send-btn" onclick="confirmRedPacket()">塞钱进红包</button>
+
+            <div class="transfer-tip">未领取的红包，将于24小时后发起退款</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      function getChatId() {
+        const params = new URLSearchParams(window.location.search);
+        const chatId = params.get('chatId') || '';
+        console.log('红包页面 - 获取到的chatId:', chatId);
+        return chatId;
+      }
+      function goBack() {
+        const chatId = getChatId();
+        const url =
+          'chat.html' + (chatId ? '?chatId=' + encodeURIComponent(chatId) + '&fromRedPacket=1' : '?fromRedPacket=1');
+        console.log('红包页面 - 返回URL:', url);
+        window.location.href = url;
+      }
+      function updateBigAmount() {
+        // 在新的界面中不需要大金额显示，保留函数防止报错
+      }
+      function confirmRedPacket() {
+        const amount = document.getElementById('redPacketAmount').value.trim();
+        let bless = document.getElementById('redPacketBless').value.trim();
+
+        console.log('=== 确认红包发送 ===');
+        console.log('输入的金额:', amount);
+        console.log('输入的祝福语:', bless);
+
+        if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+          console.log('金额无效，焦点到金额输入框');
+          document.getElementById('redPacketAmount').focus();
+          return;
+        }
+        if (!bless) {
+          const blessArr = [
+            '恭喜发财，大吉大利！',
+            '新年快乐，万事如意！',
+            '心想事成，步步高升！',
+            '财源广进，幸福安康！',
+          ];
+          bless = blessArr[Math.floor(Math.random() * blessArr.length)];
+          console.log('使用默认祝福语:', bless);
+        }
+
+        const chatId = getChatId();
+        const redPacketData = {
+          amount: parseFloat(amount).toFixed(2),
+          bless,
+          chatId: chatId,
+          timestamp: new Date().toISOString(),
+        };
+
+        console.log('准备保存的红包数据:', redPacketData);
+        localStorage.setItem('redPacketData', JSON.stringify(redPacketData));
+        console.log('红包数据已保存到localStorage');
+
+        // 立即返回聊天页面
+        goBack();
+      }
+      document.getElementById('redPacketAmount').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') confirmRedPacket();
+      });
+      document.getElementById('redPacketBless').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') confirmRedPacket();
+      });
+
+      // 页面加载完成后显示调试信息
+      window.addEventListener('load', function () {
+        console.log('红包页面加载完成');
+        console.log('当前URL:', window.location.href);
+        console.log('获取到的chatId:', getChatId());
+      });
+    </script>
+  </body>
+</html>

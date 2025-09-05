@@ -1,0 +1,25 @@
+# 忽略临时文件和调试文件
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+
+# 忽略IDE配置文件
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 忽略测试文件
+test-*.html
+debug-*.html
+
+# 忽略临时文档
+新建 文本文档.txt
+*.txt
+
+# 忽略开发相关的文件夹
+mcp-server-project/
+
+# 忽略工作文件
+work.html
