@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>消息格式测试</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f5f5f5;
+      }
+      .test-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .test-section {
+        margin-bottom: 30px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+      .test-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 15px;
+      }
+      .test-button {
+        padding: 10px 20px;
+        margin: 5px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .test-button:hover {
+        background: #0056b3;
+      }
+      .result {
+        margin-top: 15px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        font-family: monospace;
+        white-space: pre-wrap;
+      }
+      .status {
+        padding: 5px 10px;
+        border-radius: 3px;
+        margin-left: 10px;
+        font-size: 12px;
+      }
+      .status.success {
+        background: #d4edda;
+        color: #155724;
+      }
+      .status.error {
+        background: #f8d7da;
+        color: #721c24;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>聊天消息格式持久化测试</h1>
+
+      <div class="test-section">
+        <div class="test-title">1. 测试数据准备</div>
+        <button class="test-button" onclick="createTestData()">创建测试数据</button>
+        <button class="test-button" onclick="clearTestData()">清理测试数据</button>
+        <div id="data-result" class="result"></div>
+      </div>
+
+      <div class="test-section">
+        <div class="test-title">2. 表情包消息测试</div>
+        <button class="test-button" onclick="testEmojiMessage()">测试表情包消息</button>
+        <div id="emoji-result" class="result"></div>
+      </div>
+
+      <div class="test-section">
+        <div class="test-title">3. 红包消息测试</div>
+        <button class="test-button" onclick="testRedPacketMessage()">测试红包消息</button>
+        <div id="redpacket-result" class="result"></div>
+      </div>
+
+      <div class="test-section">
+        <div class="test-title">4. 转账消息测试</div>
+        <button class="test-button" onclick="testTransferMessage()">测试转账消息</button>
+        <div id="transfer-result" class="result"></div>
+      </div>
+
+      <div class="test-section">
+        <div class="test-title">5. 综合持久化测试</div>
+        <button class="test-button" onclick="testPersistence()">测试消息持久化</button>
+        <button class="test-button" onclick="openChatPage()">打开聊天页面验证</button>
+        <div id="persistence-result" class="result"></div>
+      </div>
+    </div>
+
+    <script>
+      const TEST_CHAT_ID = 'test_format_chat';
+
+      function createTestData() {
+        const testMessages = [
+          {
+            id: Date.now() + 1,
+            sender: 'user',
+            text: '测试普通消息',
+            timestamp: new Date().toISOString(),
+            senderName: '用户',
+          },
+          {
+            id: Date.now() + 2,
+            sender: 'user',
+            text: '[表情包:https://via.placeholder.com/100x100/ff6b6b/ffffff?text=😀]',
+            timestamp: new Date().toISOString(),
+            senderName: '用户',
+          },
+          {
+            id: Date.now() + 3,
+            sender: 'ai',
+            text: '🧧 恭喜发财|188.88',
+            timestamp: new Date().toISOString(),
+            senderName: 'AI助手',
+          },
+          {
+            id: Date.now() + 4,
+            sender: 'user',
+            text: '💸 向你转账 100.00元 - 测试转账',
+            timestamp: new Date().toISOString(),
+            senderName: '用户',
+          },
+        ];
+
+        localStorage.setItem(`chatHistory_${TEST_CHAT_ID}`, JSON.stringify(testMessages));
+
+        document.getElementById('data-result').innerHTML =
+          '✅ 测试数据已创建\n' +
+          `聊天ID: ${TEST_CHAT_ID}\n` +
+          `消息数量: ${testMessages.length}条\n` +
+          `数据大小: ${JSON.stringify(testMessages).length}字节`;
+      }
+
+      function clearTestData() {
+        localStorage.removeItem(`chatHistory_${TEST_CHAT_ID}`);
+        document.getElementById('data-result').innerHTML = '🗑️ 测试数据已清理';
+      }
+
+      function testEmojiMessage() {
+        const chatHistory = localStorage.getItem(`chatHistory_${TEST_CHAT_ID}`);
+        if (!chatHistory) {
+          document.getElementById('emoji-result').innerHTML = '❌ 请先创建测试数据';
+          return;
+        }
+
+        const messages = JSON.parse(chatHistory);
+        const emojiMessage = messages.find(msg => msg.text.startsWith('[表情包:'));
+
+        if (emojiMessage) {
+          const isValidFormat = /^\[表情包:.+\]$/.test(emojiMessage.text);
+          const result = isValidFormat ? '✅ 表情包消息格式正确' : '❌ 表情包消息格式错误';
+
+          document.getElementById('emoji-result').innerHTML =
+            `${result}\n` +
+            `消息内容: ${emojiMessage.text}\n` +
+            `格式匹配: ${isValidFormat}\n` +
+            `消息ID: ${emojiMessage.id}`;
+        } else {
+          document.getElementById('emoji-result').innerHTML = '❌ 未找到表情包消息';
+        }
+      }
+
+      function testRedPacketMessage() {
+        const chatHistory = localStorage.getItem(`chatHistory_${TEST_CHAT_ID}`);
+        if (!chatHistory) {
+          document.getElementById('redpacket-result').innerHTML = '❌ 请先创建测试数据';
+          return;
+        }
+
+        const messages = JSON.parse(chatHistory);
+        const redPacketMessage = messages.find(msg => msg.text.startsWith('🧧'));
+
+        if (redPacketMessage) {
+          const match = redPacketMessage.text.match(/🧧\s*(.+)\|(.+)/);
+          const isValidFormat = !!match;
+
+          let result = isValidFormat ? '✅ 红包消息格式正确' : '❌ 红包消息格式错误';
+
+          document.getElementById('redpacket-result').innerHTML =
+            `${result}\n` +
+            `消息内容: ${redPacketMessage.text}\n` +
+            `格式匹配: ${isValidFormat}\n` +
+            `祝福语: ${match ? match[1] : 'N/A'}\n` +
+            `金额: ${match ? match[2] : 'N/A'}`;
+        } else {
+          document.getElementById('redpacket-result').innerHTML = '❌ 未找到红包消息';
+        }
+      }
+
+      function testTransferMessage() {
+        const chatHistory = localStorage.getItem(`chatHistory_${TEST_CHAT_ID}`);
+        if (!chatHistory) {
+          document.getElementById('transfer-result').innerHTML = '❌ 请先创建测试数据';
+          return;
+        }
+
+        const messages = JSON.parse(chatHistory);
+        const transferMessage = messages.find(msg => msg.text.startsWith('💸'));
+
+        if (transferMessage) {
+          const match = transferMessage.text.match(
+            /💸\s*(?:向你转账|已接受转账|退还转账)\s*(\d+\.?\d*)元(?:\s*-\s*(.+))?/,
+          );
+          const isValidFormat = !!match;
+
+          let result = isValidFormat ? '✅ 转账消息格式正确' : '❌ 转账消息格式错误';
+
+          document.getElementById('transfer-result').innerHTML =
+            `${result}\n` +
+            `消息内容: ${transferMessage.text}\n` +
+            `格式匹配: ${isValidFormat}\n` +
+            `金额: ${match ? match[1] : 'N/A'}\n` +
+            `说明: ${match && match[2] ? match[2] : 'N/A'}`;
+        } else {
+          document.getElementById('transfer-result').innerHTML = '❌ 未找到转账消息';
+        }
+      }
+
+      function testPersistence() {
+        const chatHistory = localStorage.getItem(`chatHistory_${TEST_CHAT_ID}`);
+        if (!chatHistory) {
+          document.getElementById('persistence-result').innerHTML = '❌ 请先创建测试数据';
+          return;
+        }
+
+        const messages = JSON.parse(chatHistory);
+        let results = [];
+
+        // 测试各种消息类型的持久化
+        const emojiCount = messages.filter(msg => msg.text.startsWith('[表情包:')).length;
+        const redPacketCount = messages.filter(msg => msg.text.startsWith('🧧')).length;
+        const transferCount = messages.filter(msg => msg.text.startsWith('💸')).length;
+        const normalCount = messages.filter(
+          msg => !msg.text.startsWith('[表情包:') && !msg.text.startsWith('🧧') && !msg.text.startsWith('💸'),
+        ).length;
+
+        results.push(`✅ 持久化测试完成`);
+        results.push(`总消息数: ${messages.length}`);
+        results.push(`普通消息: ${normalCount}条`);
+        results.push(`表情包消息: ${emojiCount}条`);
+        results.push(`红包消息: ${redPacketCount}条`);
+        results.push(`转账消息: ${transferCount}条`);
+        results.push(`数据完整性: ${messages.every(msg => msg.id && msg.sender && msg.text) ? '✅' : '❌'}`);
+
+        document.getElementById('persistence-result').innerHTML = results.join('\n');
+      }
+
+      function openChatPage() {
+        // 创建聊天信息
+        const chatInfo = {
+          id: TEST_CHAT_ID,
+          name: '格式测试',
+          avatar: '🧪',
+          type: 'ai',
+          lastMessage: '点击验证消息格式',
+          time: '刚刚',
+          unread: 0,
+        };
+
+        localStorage.setItem('currentChatInfo', JSON.stringify(chatInfo));
+
+        // 打开聊天页面
+        window.open(`chat.html?chatId=${TEST_CHAT_ID}&name=格式测试&avatar=🧪&type=ai`, '_blank');
+      }
+    </script>
+  </body>
+</html>

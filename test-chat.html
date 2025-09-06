@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>测试聊天界面</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        margin: 20px;
+        background: #f0f0f0;
+      }
+      .chat-container {
+        max-width: 400px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
+      .input-area {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      .message-input {
+        flex: 1;
+        padding: 10px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 20px;
+        font-size: 16px;
+        outline: none;
+      }
+      .send-btn {
+        padding: 10px 20px;
+        background: #007aff;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .send-btn:hover {
+        background: #0056cc;
+      }
+      .feature-btns {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .feature-btn {
+        padding: 8px 16px;
+        background: #f0f0f0;
+        border: none;
+        border-radius: 15px;
+        cursor: pointer;
+      }
+      .feature-btn:hover {
+        background: #e0e0e0;
+      }
+      .messages {
+        min-height: 200px;
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 10px;
+        background: #fafafa;
+      }
+      .message {
+        margin: 10px 0;
+        padding: 8px 12px;
+        border-radius: 15px;
+        max-width: 80%;
+      }
+      .message.user {
+        background: #007aff;
+        color: white;
+        margin-left: auto;
+      }
+      .message.ai {
+        background: #e0e0e0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chat-container">
+      <h2>测试聊天界面</h2>
+
+      <div class="messages" id="messages">
+        <div class="message ai">你好！我是AI助手，有什么可以帮助你的吗？</div>
+      </div>
+
+      <div class="input-area">
+        <input type="text" class="message-input" id="messageInput" placeholder="输入消息..." />
+        <button class="send-btn" id="sendBtn">发送</button>
+      </div>
+
+      <div class="feature-btns">
+        <button class="feature-btn" id="redpacketBtn">🧧 红包</button>
+        <button class="feature-btn" id="transferBtn">💰 转账</button>
+        <button class="feature-btn" id="imageBtn">📷 图片</button>
+        <button class="feature-btn" id="locationBtn">📍 位置</button>
+      </div>
+    </div>
+
+    <script>
+      // 确保DOM加载完成
+      document.addEventListener('DOMContentLoaded', function () {
+        console.log('页面加载完成');
+
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const messages = document.getElementById('messages');
+
+        // 发送消息函数
+        function sendMessage() {
+          const text = messageInput.value.trim();
+          if (!text) return;
+
+          console.log('发送消息:', text);
+
+          // 添加用户消息
+          const userMsg = document.createElement('div');
+          userMsg.className = 'message user';
+          userMsg.textContent = text;
+          messages.appendChild(userMsg);
+
+          // 清空输入框
+          messageInput.value = '';
+
+          // 滚动到底部
+          messages.scrollTop = messages.scrollHeight;
+
+          // 模拟AI回复
+          setTimeout(() => {
+            const aiMsg = document.createElement('div');
+            aiMsg.className = 'message ai';
+            aiMsg.textContent = '我收到了你的消息: ' + text;
+            messages.appendChild(aiMsg);
+            messages.scrollTop = messages.scrollHeight;
+          }, 1000);
+        }
+
+        // 绑定发送按钮
+        sendBtn.addEventListener('click', function () {
+          console.log('发送按钮被点击');
+          sendMessage();
+        });
+
+        // 回车发送
+        messageInput.addEventListener('keypress', function (e) {
+          if (e.key === 'Enter') {
+            sendMessage();
+          }
+        });
+
+        // 绑定功能按钮
+        document.getElementById('redpacketBtn').addEventListener('click', function () {
+          alert('红包功能');
+        });
+
+        document.getElementById('transferBtn').addEventListener('click', function () {
+          alert('转账功能');
+        });
+
+        document.getElementById('imageBtn').addEventListener('click', function () {
+          alert('图片功能');
+        });
+
+        document.getElementById('locationBtn').addEventListener('click', function () {
+          alert('位置功能');
+        });
+
+        console.log('所有事件绑定完成');
+      });
+    </script>
+  </body>
+</html>

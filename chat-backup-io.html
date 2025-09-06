@@ -1923,7 +1923,7 @@
           saveBtn.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            
+            console.log('保存按钮被点击（事件监听器）');
             saveSettings();
           });
         }
@@ -2126,7 +2126,7 @@
         const chatAvatarFile = urlParams.get('chatAvatarFile');
         const chatType = urlParams.get('type');
 
-        //console.log('initFromQQParams - URL参数:', {
+        console.log('initFromQQParams - URL参数:', {
           chatId,
           chatName,
           chatAvatar,
@@ -2169,7 +2169,7 @@
                 // 强制重新生成头像字母，不使用URL传递的值
                 currentChatInfo.avatar = settings.aiName ? settings.aiName.charAt(0) : 'AI';
                 currentChatInfo.avatarFile = '';
-                //console.log(
+                console.log(
                   'initFromQQParams - 重新生成AI头像字母:',
                   currentChatInfo.avatar,
                   '来源名称:',
@@ -2326,7 +2326,7 @@
                     freedSpace += value.length;
                     localStorage.removeItem(key);
                     cleanedItems++;
-                    
+                    console.log('清理超大数据:', key, value.length);
                   }
                   // 清理旧的聊天记录（保留最近的）
                   else if (key.startsWith('chatHistory_') && value.length > 500000) {
@@ -2337,7 +2337,7 @@
                         localStorage.setItem(key, JSON.stringify(recentMessages));
                         freedSpace += value.length - JSON.stringify(recentMessages).length;
                         cleanedItems++;
-                        
+                        console.log('清理聊天记录:', key, messages.length, '->', recentMessages.length);
                       }
                     } catch (e) {
                       // 如果解析失败，直接删除
@@ -4907,7 +4907,7 @@ ${emojiList}
       // 保存设置（按聊天ID分别保存）
       function saveSettings() {
         try {
-          
+          console.log('开始保存设置...');
 
           const getVal = (id, fallback = '') => {
             const el = document.getElementById(id);
@@ -4950,7 +4950,7 @@ ${emojiList}
           // 按聊天ID分别保存设置
           const settingsKey = `chatSettings_${currentChatInfo.id}`;
           localStorage.setItem(settingsKey, JSON.stringify(currentSettings));
-          
+          console.log('设置已保存到localStorage:', settingsKey);
 
           // 强制更新显示
           updateAvatarDisplay('user', currentSettings.userAvatar, currentSettings.userAvatarFile);
@@ -4973,7 +4973,7 @@ ${emojiList}
           const panel = document.getElementById('settingsPanel');
           if (panel) panel.classList.remove('visible');
           showToast('设置已保存');
-          
+          console.log('设置保存完成');
         } catch (error) {
           console.error('保存设置时出错:', error);
           showToast('保存设置失败: ' + error.message);
@@ -5283,7 +5283,7 @@ ${emojiList}
       function updateUI() {
         // 如果是AI聊天，同步AI设置到聊天信息
         if (currentChatInfo.type === 'ai') {
-          //console.log('updateUI - 当前currentChatInfo头像状态:', {
+          console.log('updateUI - 当前currentChatInfo头像状态:', {
             avatarFile: currentChatInfo.avatarFile,
             avatar: currentChatInfo.avatar,
           });
@@ -5319,7 +5319,7 @@ ${emojiList}
               }
             }
 
-            //console.log('updateUI - 最终头像状态:', {
+            console.log('updateUI - 最终头像状态:', {
               'currentChatInfo.avatarFile': currentChatInfo.avatarFile,
               'currentChatInfo.avatar': currentChatInfo.avatar,
               'currentSettings.aiAvatarFile': currentSettings.aiAvatarFile,
@@ -5382,4 +5382,3 @@ ${emojiList}
     </script>
   </body>
 </html>
-

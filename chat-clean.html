@@ -1685,7 +1685,7 @@
               </div>
             </div>
 
-            <button class="save-btn" onclick="saveSettings()" id="saveSettingsBtn">保存设置</button>
+            <button class="save-btn" onclick="saveSettings()">保存设置</button>
           </div>
         </div>
 
@@ -1718,7 +1718,6 @@
 
             <div class="action-buttons">
               <button class="action-btn" onclick="clearChatHistory()">清空聊天记录</button>
-              <button class="action-btn" onclick="cleanStorage()">清理存储</button>
               <button class="action-btn danger" onclick="deleteChatFromQQ()">删除聊天</button>
             </div>
           </div>
@@ -1732,6 +1731,8 @@
         try {
           // 如果世界书API不存在，则创建一个模拟的API
           if (typeof window.getWorldBookEntriesForCharacter !== 'function') {
+            
+
             // 从localStorage加载世界书数据
             function loadWorldBookData() {
               const saved = localStorage.getItem('worldBookEntries');
@@ -1808,6 +1809,8 @@
             createTime: new Date(),
           };
         }
+
+        
       }
 
       // 全局变量
@@ -1858,9 +1861,6 @@
 
       // 初始化
       document.addEventListener('DOMContentLoaded', function () {
-        // 首先检查并清理URI长度问题
-        checkAndCleanURI();
-
         // 立即进行全局变量检查
         validateGlobalVariables();
 
@@ -1872,11 +1872,13 @@
 
         // 添加全局错误处理，减少控制台错误信息对用户的干扰
         window.addEventListener('error', function (e) {
+          
           // 静默处理，不显示错误给用户
           e.preventDefault();
         });
 
         window.addEventListener('unhandledrejection', function (e) {
+          
           // 静默处理Promise拒绝，防止未捕获的Promise错误
           e.preventDefault();
         });
@@ -1906,6 +1908,7 @@
         const header = document.querySelector('.chat-header');
         if (header) {
           header.addEventListener('dblclick', function () {
+            
             forceCleanTypingIndicator();
             alert('已清理AI输入状态，发送按钮已恢复');
           });
@@ -1916,18 +1919,6 @@
         const chatInfoPanel = document.getElementById('chatInfoPanel');
         if (settingsPanel) settingsPanel.classList.remove('visible');
         if (chatInfoPanel) chatInfoPanel.style.display = 'none';
-
-        // 添加保存设置按钮的额外事件监听器
-        const saveBtn = document.getElementById('saveSettingsBtn');
-        if (saveBtn) {
-          saveBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            saveSettings();
-          });
-        }
-
         loadChatHistory();
         initEventListeners();
         updateUI();
@@ -1946,17 +1937,26 @@
         // 独立的红包数据检查函数
         function checkRedPacketData() {
           const redPacketData = localStorage.getItem('redPacketData');
+          
+          
+          
+          
 
           if (redPacketData && currentChatInfo && currentChatInfo.id) {
             try {
               const data = JSON.parse(redPacketData);
-
+              
+              
               if (data.chatId && data.chatId === currentChatInfo.id) {
+                
                 const redPacketMessage = `🧧 ${data.bless}|${data.amount}`;
-
+                
                 addMessage('user', redPacketMessage);
                 localStorage.removeItem('redPacketData');
+                
               } else {
+                
+                
               }
             } catch (e) {
               console.error('解析红包数据失败:', e);
@@ -1964,10 +1964,13 @@
             }
           } else {
             if (!redPacketData) {
+              
             }
             if (!currentChatInfo) {
+              
             }
             if (!currentChatInfo?.id) {
+              
             }
           }
         }
@@ -1975,20 +1978,29 @@
         // 独立的转账数据检查函数
         function checkTransferData() {
           const transferData = localStorage.getItem('transferData');
+          
+          
+          
+          
 
           if (transferData && currentChatInfo && currentChatInfo.id) {
             try {
               const data = JSON.parse(transferData);
-
+              
+              
               if (data.chatId && data.chatId === currentChatInfo.id) {
+                
                 let transferMessage = `💸 向你转账 ${data.amount}元`;
                 if (data.message && data.message !== '转账') {
                   transferMessage += ` - ${data.message}`;
                 }
-
+                
                 addMessage('user', transferMessage);
                 localStorage.removeItem('transferData');
+                
               } else {
+                
+                
               }
             } catch (e) {
               console.error('解析转账数据失败:', e);
@@ -1996,10 +2008,13 @@
             }
           } else {
             if (!transferData) {
+              
             }
             if (!currentChatInfo) {
+              
             }
             if (!currentChatInfo?.id) {
+              
             }
           }
         }
@@ -2008,6 +2023,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('fromRedPacket')) {
           setTimeout(() => {
+            
             checkRedPacketData();
           }, 200);
         }
@@ -2015,6 +2031,7 @@
         // 检查是否从转账页面返回，如果是则再次检查转账数据
         if (urlParams.get('fromTransfer')) {
           setTimeout(() => {
+            
             checkTransferData();
           }, 200);
         }
@@ -2026,6 +2043,7 @@
           localStorage.getItem('selectedImage')
         ) {
           setTimeout(() => {
+            
             checkPendingImage();
             // 额外的状态恢复
             setTimeout(() => {
@@ -2034,6 +2052,7 @@
               const messageInput = document.getElementById('messageInput');
               if (sendBtn && messageInput) {
                 sendBtn.disabled = !messageInput.value.trim();
+                
               }
             }, 300);
           }, 250);
@@ -2042,16 +2061,21 @@
         // 强制再次同步AI设置到界面显示
         setTimeout(() => {
           if (currentChatInfo.type === 'ai' && currentSettings.aiName) {
+            
+            
             currentChatInfo.name = currentSettings.aiName;
-
+            
             document.getElementById('chatName').textContent = currentChatInfo.name;
             updateChatInfoDisplay();
           }
         }, 100);
+
+        
       });
 
       // 监听页面焦点事件，用于从API设置页面返回时更新状态
       window.addEventListener('focus', function () {
+        
         checkAPIStatus();
 
         // 检查是否有选中的表情包（从表情包管理页面返回时）
@@ -2059,16 +2083,20 @@
 
         // 检查是否有红包数据（从红包页面返回时）
         const redPacketData = localStorage.getItem('redPacketData');
-
+        
         if (redPacketData) {
           try {
             const data = JSON.parse(redPacketData);
-
+            
+            
             if (data.chatId && data.chatId === currentChatInfo.id) {
+              
               const redPacketMessage = `🧧 ${data.bless}|${data.amount}`;
               addMessage('user', redPacketMessage);
               localStorage.removeItem('redPacketData');
+              
             } else {
+              
             }
           } catch (e) {
             console.error('焦点事件 - 解析红包数据失败:', e);
@@ -2082,43 +2110,8 @@
         }
       });
 
-      // 检查并清理可能导致URI过长的问题
-      function checkAndCleanURI() {
-        try {
-          // 检查URL长度
-          if (window.location.href.length > 2000) {
-            console.warn('URL过长，自动清理：', window.location.href.length, '字符');
-            const baseUrl = window.location.pathname;
-            window.history.replaceState({}, '', baseUrl);
-            return true;
-          }
-
-          // 检查localStorage中是否有超大数据
-          for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            const value = localStorage.getItem(key);
-            if (value && value.length > 1000000) {
-              // 1MB
-              console.warn('发现超大localStorage数据：', key, value.length, '字符');
-              // 可以选择性地清理或压缩数据
-            }
-          }
-        } catch (e) {
-          console.error('URI清理检查失败:', e);
-        }
-        return false;
-      }
-
       // 从QQ界面传递的参数初始化
       function initFromQQParams() {
-        // 清理URL，防止URI过长错误
-        if (window.location.search.length > 2000) {
-          console.warn('URL参数过长，清理URL');
-          const baseUrl = window.location.pathname;
-          window.history.replaceState({}, '', baseUrl);
-          return;
-        }
-
         const urlParams = new URLSearchParams(window.location.search);
         const chatId = urlParams.get('chatId');
         const chatName = urlParams.get('chatName');
@@ -2126,7 +2119,7 @@
         const chatAvatarFile = urlParams.get('chatAvatarFile');
         const chatType = urlParams.get('type');
 
-        //console.log('initFromQQParams - URL参数:', {
+        console.log('initFromQQParams - URL参数:', {
           chatId,
           chatName,
           chatAvatar,
@@ -2145,31 +2138,38 @@
             createTime: new Date(),
           };
 
+          
+
           // 如果是AI聊天，优先使用用户设置的AI名称和头像
           if (chatType === 'ai') {
             const saved = localStorage.getItem('chatSettings');
-
+            
             if (saved) {
               const settings = JSON.parse(saved);
+              
 
               if (settings.aiName) {
+                
                 currentChatInfo.name = settings.aiName;
               }
 
               // 处理头像信息 - 优先使用URL传递的头像文件，然后是设置中的头像
               if (chatAvatarFile) {
+                
                 // URL中已有头像文件，保持不变
               } else if (settings.aiAvatarFile) {
                 currentChatInfo.avatarFile = settings.aiAvatarFile;
                 currentChatInfo.avatar = '';
+                
               } else if (settings.aiAvatar) {
                 currentChatInfo.avatar = settings.aiAvatar;
                 currentChatInfo.avatarFile = '';
+                
               } else {
                 // 强制重新生成头像字母，不使用URL传递的值
                 currentChatInfo.avatar = settings.aiName ? settings.aiName.charAt(0) : 'AI';
                 currentChatInfo.avatarFile = '';
-                //console.log(
+                console.log(
                   'initFromQQParams - 重新生成AI头像字母:',
                   currentChatInfo.avatar,
                   '来源名称:',
@@ -2178,6 +2178,8 @@
               }
             }
           }
+
+          
 
           // 更新界面显示
           updateChatInfoDisplay();
@@ -2207,6 +2209,7 @@
         document.getElementById('infoName').textContent = currentChatInfo.name;
         document.getElementById('infoStatus').textContent = currentChatInfo.status;
 
+        
         document.getElementById('chatType').textContent =
           currentChatInfo.type === 'ai' ? 'AI对话' : currentChatInfo.type === 'group' ? '群聊' : '私聊';
         document.getElementById('createTime').textContent = formatTime(currentChatInfo.createTime);
@@ -2301,66 +2304,6 @@
           setTimeout(() => {
             goBackToQQ();
           }, 1500);
-        }
-      }
-
-      // 清理存储空间
-      function cleanStorage() {
-        if (showConfirm('确定要清理存储空间吗？这将删除过大的数据和旧的聊天记录。')) {
-          let cleanedItems = 0;
-          let freedSpace = 0;
-
-          try {
-            // 检查所有localStorage项目
-            const keysToCheck = [];
-            for (let i = 0; i < localStorage.length; i++) {
-              keysToCheck.push(localStorage.key(i));
-            }
-
-            keysToCheck.forEach(key => {
-              try {
-                const value = localStorage.getItem(key);
-                if (value) {
-                  // 清理超大数据 (>1MB)
-                  if (value.length > 1000000) {
-                    freedSpace += value.length;
-                    localStorage.removeItem(key);
-                    cleanedItems++;
-                    
-                  }
-                  // 清理旧的聊天记录（保留最近的）
-                  else if (key.startsWith('chatHistory_') && value.length > 500000) {
-                    try {
-                      const messages = JSON.parse(value);
-                      if (Array.isArray(messages) && messages.length > 100) {
-                        const recentMessages = messages.slice(-50);
-                        localStorage.setItem(key, JSON.stringify(recentMessages));
-                        freedSpace += value.length - JSON.stringify(recentMessages).length;
-                        cleanedItems++;
-                        
-                      }
-                    } catch (e) {
-                      // 如果解析失败，直接删除
-                      localStorage.removeItem(key);
-                      freedSpace += value.length;
-                      cleanedItems++;
-                    }
-                  }
-                }
-              } catch (e) {
-                console.error('清理项目失败:', key, e);
-              }
-            });
-
-            if (cleanedItems > 0) {
-              showToast(`已清理 ${cleanedItems} 个项目，释放约 ${Math.round(freedSpace / 1024)} KB 空间`);
-            } else {
-              showToast('存储空间良好，无需清理');
-            }
-          } catch (e) {
-            console.error('存储清理失败:', e);
-            showToast('清理失败，请重试');
-          }
         }
       }
 
@@ -2468,6 +2411,8 @@
 
               // 更新本地存储 - 修复：使用正确的保存函数
               saveChatHistory();
+
+              
             }, 300);
           }
         }
@@ -2639,6 +2584,8 @@
 
             // 更新本地存储
             saveChatHistory();
+
+            
           }, 300);
         }
       }
@@ -2666,6 +2613,8 @@
           // 保存聊天记录
           saveChatHistory();
 
+          
+
           showToast('消息已删除');
         }
       }
@@ -2673,6 +2622,10 @@
       // 发送红包
       // 跳转到红包页面，带上chatId参数
       function sendRedPacket() {
+        
+        
+        
+
         if (!currentChatInfo.id) {
           console.error('错误：没有有效的chatId');
           alert('错误：聊天ID无效');
@@ -2680,15 +2633,20 @@
         }
 
         const url = 'redpacket.html?chatId=' + encodeURIComponent(currentChatInfo.id);
-
+        
         window.location.href = url;
       }
 
       // 发送转账
       function sendTransfer() {
+        
+        
+
         const chatId = currentChatInfo ? currentChatInfo.id : '';
+        
 
         const url = 'zhuanzhang.html' + (chatId ? '?chatId=' + encodeURIComponent(chatId) : '');
+        
 
         window.location.href = url;
       }
@@ -2870,6 +2828,8 @@
 
       // 插入表情包到聊天
       function insertEmoji(src) {
+        
+
         // 创建表情包消息
         addMessage('user', `[表情包:${src}]`);
 
@@ -2905,6 +2865,8 @@
 
       // 彻底重置聊天状态（用于图片发送后恢复）
       function resetChatState() {
+        
+
         // 重置所有关键变量
         isAITyping = false;
         pendingUserMessage = null;
@@ -2913,6 +2875,7 @@
         const indicators = document.querySelectorAll('#typingIndicator, .typing-indicator-message');
         indicators.forEach(indicator => {
           indicator.remove();
+          
         });
 
         // 重置按钮状态
@@ -2922,11 +2885,13 @@
 
         if (sendBtn && messageInput) {
           sendBtn.disabled = !messageInput.value.trim();
+          
         }
 
         if (functionBtn) {
           functionBtn.classList.remove('active');
           functionBtn.title = '更多功能';
+          
         }
 
         // 隐藏功能卡片
@@ -2934,21 +2899,27 @@
         if (functionCard) {
           functionCard.style.display = 'none';
         }
+
+        
       }
 
       // 检查是否有待发送的图片（从图片发送页面返回时）
       function checkPendingImage() {
+        
         const pendingImage = localStorage.getItem('pendingImage');
         const selectedImage = localStorage.getItem('selectedImage'); // 新增：照搬表情包逻辑
+        
+        
 
         // 优先处理新的 selectedImage，然后是旧的 pendingImage
         const imageData = selectedImage || pendingImage;
         if (imageData) {
           try {
             const parsedImageData = JSON.parse(imageData);
+            
 
             // 确保在处理图片前清理任何AI输入状态
-
+            
             hideTypingIndicator();
             forceCleanTypingIndicator();
 
@@ -2963,12 +2934,14 @@
               timestamp: parsedImageData.timestamp,
             };
 
+            
             // 添加图片消息到聊天
             addImageMessage('user', imageMessage);
 
             // 清除localStorage中的图片数据
             localStorage.removeItem('pendingImage');
             localStorage.removeItem('selectedImage'); // 新增：清除新格式
+            
 
             // 立即重置聊天状态
             resetChatState();
@@ -2976,12 +2949,15 @@
             // 延迟再次确保状态正确
             setTimeout(() => {
               resetChatState();
+              
             }, 300);
 
             // 如果开启了自动保存，保存聊天记录
             if (currentSettings.autoSave) {
               saveChatHistory();
             }
+
+            
           } catch (e) {
             console.error('解析待发送图片数据失败:', e);
           }
@@ -3234,6 +3210,7 @@
 
         // 设置一个超时机制，最多等待30秒
         const timeoutId = setTimeout(() => {
+          
           forceCleanTypingIndicator();
           addMessage('ai', '抱歉，回复超时了，请稍后重试。');
         }, 30000);
@@ -3247,7 +3224,11 @@
           // 清除超时定时器
           clearTimeout(timeoutId);
 
+          
+
           if (Array.isArray(aiResponse)) {
+            
+
             // 先隐藏初始的输入指示器
             forceCleanTypingIndicator();
 
@@ -3256,6 +3237,8 @@
               const delay = i === 0 ? 0 : 800 + Math.random() * 1200;
 
               setTimeout(() => {
+                
+
                 // 为第2条及以后的消息添加输入指示器
                 if (i > 0) {
                   showTypingIndicator();
@@ -3286,7 +3269,7 @@
           } else {
             // 单条消息模式
             forceCleanTypingIndicator();
-
+            
             addMessage('ai', aiResponse);
             lastAIResponse = aiResponse;
             if (currentSettings.autoSave) {
@@ -3317,9 +3300,16 @@
         const functionBtn = document.getElementById('functionBtn');
         const rollBtn = document.getElementById('rollBtn');
 
+        
+        
+        
+        
+        
+
         // 确保发送按钮初始状态
         if (sendBtn) {
           sendBtn.disabled = true; // 初始状态为禁用
+          
         }
 
         // 确保页面初始化时清理AI输入状态
@@ -3329,6 +3319,7 @@
           if (sendBtn && messageInput) {
             sendBtn.disabled = !messageInput.value.trim();
           }
+          
         }, 100);
 
         // 输入框自动调整高度
@@ -3342,6 +3333,7 @@
               // 只有在AI不在输入状态时才根据输入内容更新按钮状态
               if (!isAITyping) {
                 sendBtn.disabled = !this.value.trim();
+                
               }
             }
           });
@@ -3357,7 +3349,10 @@
 
         // 发送按钮点击事件
         if (sendBtn) {
+          
+          
           sendBtn.addEventListener('click', function () {
+            
             sendMessage();
           });
         } else {
@@ -3366,11 +3361,13 @@
 
         // 展开按钮点击事件
         expandBtn.addEventListener('click', function () {
+          
           toggleFunctionButtons();
         });
 
         // 功能按钮点击事件
         functionBtn.addEventListener('click', function () {
+          
           toggleFunctionCard();
         });
 
@@ -3409,10 +3406,12 @@
 
       // 发送消息
       async function sendMessage() {
+        
         const input = document.getElementById('messageInput');
         const text = input.value.trim();
-
+        
         if (!text) {
+          
           return;
         }
 
@@ -3420,6 +3419,7 @@
         hideTypingIndicator();
 
         if (isAITyping) {
+          
           return;
         }
 
@@ -3432,6 +3432,7 @@
         // 检查是否是红包消息，如果是则不进入正常AI回复流程
         const isRedPacketMessage = text.startsWith('🧧');
         if (isRedPacketMessage && currentChatInfo.type === 'ai') {
+          
           document.getElementById('sendBtn').disabled = false;
           if (currentSettings.autoSave) saveChatHistory();
           return; // 直接返回，不设置pendingUserMessage
@@ -3477,12 +3478,13 @@
         let messageContent;
 
         if (isRedPacket) {
+          
           // 解析红包信息 - 新格式: 🧧 祝福语|金额
           const redPacketMatch = text.match(/🧧\s*(.+)\|(.+)/);
           if (redPacketMatch) {
             const bless = redPacketMatch[1].trim();
             const amount = redPacketMatch[2].trim();
-
+            
             messageContent = `
               <div class="redpacket-content" data-amount="${amount}">
                 <span class="redpacket-icon">🧧</span>
@@ -3493,16 +3495,18 @@
               </div>
             `;
           } else {
+            
             messageContent = escapeHtml(text);
           }
         } else if (isTransfer) {
+          
           // 解析转账信息 - 格式: 💸 向你转账/已接受转账/退还转账 100.00元 或 💸 向你转账 100.00元 - 说明
           const transferMatch = text.match(/💸\s*(?:向你转账|已接受转账|退还转账)\s*(\d+\.?\d*)元(?:\s*-\s*(.+))?/);
           if (transferMatch) {
             const amount = transferMatch[1].trim();
             const message = transferMatch[2] ? transferMatch[2].trim() : '转账';
             const isAccepted = text.includes('已接受转账');
-
+            
             messageContent = `
               <div class="transfer-content" data-amount="${amount}" data-message="${message}" ${
               isAccepted ? 'data-accepted="true"' : ''
@@ -3516,17 +3520,19 @@
               </div>
             `;
           } else {
+            
             messageContent = escapeHtml(text);
           }
         } else if (text.startsWith('[表情包:') && text.endsWith(']')) {
           // 处理表情包消息
-
+          
           const emojiMatch = text.match(/\[表情包:(.+)\]/);
           if (emojiMatch) {
             const emojiSrc = emojiMatch[1];
-
+            
             messageContent = `<img src="${emojiSrc}" alt="表情包" style="max-width: 120px; max-height: 120px; border-radius: 8px;" onerror="this.alt='[表情包加载失败]'; this.style.display='none'; this.nextSibling.style.display='inline'"><span style="display:none">[表情包]</span>`;
           } else {
+            
             messageContent = escapeHtml(text);
           }
         } else {
@@ -3588,6 +3594,7 @@
 
         // 检测红包消息，AI自动回复
         if (isUser && isRedPacket && currentChatInfo.type === 'ai') {
+          
           setTimeout(() => {
             // 解析红包信息获取金额
             const redPacketMatch = text.match(/🧧\s*(.+)\|(.+)/);
@@ -3617,6 +3624,7 @@
 
         // 检测转账消息，AI自动回复
         if (isUser && isTransfer && currentChatInfo.type === 'ai') {
+          
           setTimeout(() => {
             // 解析转账信息获取金额
             const transferMatch = text.match(/💸\s*向你转账\s*(\d+\.?\d*)元(?:\s*-\s*(.+))?/);
@@ -3725,6 +3733,8 @@
             senderName: senderName,
           });
         }
+
+        
       }
 
       // 图片预览功能
@@ -3771,6 +3781,8 @@
 
       // 红包点击处理函数
       function openRedPacket(messageId) {
+        
+
         // 检查红包是否已经被领取
         const redPacketKey = `redpacket_claimed_${messageId}`;
         const isClaimed = localStorage.getItem(redPacketKey) === 'true';
@@ -3780,6 +3792,8 @@
         const amount = redPacketElement ? redPacketElement.getAttribute('data-amount') : '未知';
         const blessElement = redPacketElement ? redPacketElement.querySelector('.redpacket-bless') : null;
         const bless = blessElement ? blessElement.textContent : '恭喜发财';
+
+        
 
         // 如果已经领取，显示已领取弹窗
         if (isClaimed) {
@@ -3978,6 +3992,8 @@
 
       // 转账点击处理函数
       function openTransfer(messageId) {
+        
+
         // 检查转账是否已经被接受
         const transferKey = `transfer_accepted_${messageId}`;
         const isAccepted = localStorage.getItem(transferKey) === 'true';
@@ -3986,6 +4002,8 @@
         const transferElement = document.querySelector(`[data-message-id="${messageId}"] .transfer-content`);
         const amount = transferElement ? transferElement.getAttribute('data-amount') : '未知';
         const message = transferElement ? transferElement.getAttribute('data-message') : '转账';
+
+        
 
         // 如果已经接受，显示已接受弹窗
         if (isAccepted) {
@@ -4085,6 +4103,8 @@
 
       // 接受转账
       function acceptTransfer(messageId, message, amount, overlay) {
+        
+
         // 标记转账为已接受
         const transferKey = `transfer_accepted_${messageId}`;
         localStorage.setItem(transferKey, 'true');
@@ -4114,6 +4134,8 @@
 
       // 退还转账（AI专用）
       function rejectTransfer(messageId, message, amount, overlay) {
+        
+
         // 关闭弹窗
         overlay.remove();
 
@@ -4325,6 +4347,7 @@
 
         messagesArea.appendChild(typingDiv);
         messagesArea.scrollTop = messagesArea.scrollHeight;
+        
       }
 
       // 隐藏输入指示器
@@ -4333,6 +4356,7 @@
         const indicator = document.getElementById('typingIndicator');
         if (indicator) {
           indicator.remove();
+          
         }
 
         // 更新发送按钮状态
@@ -4340,6 +4364,7 @@
         const messageInput = document.getElementById('messageInput');
         if (sendBtn && messageInput) {
           sendBtn.disabled = !messageInput.value.trim();
+          
         }
       }
 
@@ -4351,17 +4376,22 @@
         indicators.forEach(indicator => {
           indicator.remove();
         });
+        
 
         // 更新发送按钮状态
         const sendBtn = document.getElementById('sendBtn');
         const messageInput = document.getElementById('messageInput');
         if (sendBtn && messageInput) {
           sendBtn.disabled = !messageInput.value.trim();
+          
         }
       }
 
       // 获取AI回复（真实API调用）
       async function getAIResponse(userMessage) {
+        
+        
+
         // 动态获取相关的世界书条目
         try {
           if (typeof window.getWorldBookEntriesForCharacter === 'function') {
@@ -4371,33 +4401,46 @@
               .split(/\s+/)
               .filter(word => word.length > 1); // 过滤太短的词
 
+            
+
             // 获取相关的世界书条目用于上下文增强
             const relevantEntries = window.getWorldBookEntriesForCharacter('', keywords);
             if (relevantEntries && Array.isArray(relevantEntries) && relevantEntries.length > 0) {
+              
               // 这些条目已经在generateSystemPrompt中被包含了
             }
           }
-        } catch (error) {}
+        } catch (error) {
+          
+        }
 
         // 从localStorage获取API设置
         const apiSettings = JSON.parse(localStorage.getItem('apiSettings') || '{}');
+        
 
         if (!apiSettings.selectedService || !apiSettings[apiSettings.selectedService]?.key) {
+          
           return '请先在API设置中配置您的AI服务和API密钥。点击设置 → API配置 → 前往API设置进行配置。';
         }
+
+        
 
         try {
           let response;
           const serviceConfig = apiSettings[apiSettings.selectedService];
+          
 
           if (apiSettings.selectedService === 'openai') {
+            
             response = await callOpenAI(userMessage, serviceConfig);
           } else if (apiSettings.selectedService === 'gemini') {
+            
             response = await callGemini(userMessage, serviceConfig);
           } else {
             throw new Error('不支持的AI服务');
           }
 
+          
           return response;
         } catch (error) {
           console.error('AI API调用失败:', error);
@@ -4408,6 +4451,7 @@
       // 检查特殊红包回复
       function checkSpecialRedPacketReply(userMessage) {
         const message = userMessage.toLowerCase();
+        
 
         // 当用户要红包时，AI有概率发红包
         if (
@@ -4416,8 +4460,9 @@
           message.includes('给红包') ||
           message.includes('要红包')
         ) {
+          
           const random = Math.random();
-
+          
           if (random < 0.4) {
             // 40%概率发红包
             const amounts = ['1.88', '2.88', '5.20', '8.88', '6.66', '9.99', '13.14', '18.88'];
@@ -4451,7 +4496,7 @@
               beforeReplies[Math.floor(Math.random() * beforeReplies.length)],
               `🧧 ${blessing}|${amount}`,
             ];
-
+            
             return result;
           } else {
             // 60%概率拒绝或调皮回复
@@ -4464,7 +4509,7 @@
               ['我这个AI啊', '只有虚拟的爱给你 💕'],
             ];
             const result = refuseReplies[Math.floor(Math.random() * refuseReplies.length)];
-
+            
             return result;
           }
         }
@@ -4477,6 +4522,7 @@
           message.includes('💸') ||
           message.includes('向你转账')
         ) {
+          
           const responses = [
             ['哇！', '谢谢你要给我转账！💸', '不过我是AI收不到真钱呢 😊'],
             ['转账给我？', '心意我收到了～', '虽然钱到不了我这里 �'],
@@ -4485,12 +4531,13 @@
             ['哈哈', '转账卡片很漂亮！', '可惜我没有银行账户 🏦'],
           ];
           const result = responses[Math.floor(Math.random() * responses.length)];
-
+          
           return result;
         }
 
         // 检查一些普通消息的多条回复
         if (message.includes('你好') || message.includes('hi') || message.includes('hello')) {
+          
           const greetings = [
             ['你好呀！', '今天心情怎么样？😊'],
             ['Hi～', '很高兴见到你！✨'],
@@ -4499,11 +4546,12 @@
             ['嗨！', '欢迎来到我的聊天室！🎉'],
           ];
           const result = greetings[Math.floor(Math.random() * greetings.length)];
-
+          
           return result;
         }
 
         if (message.includes('怎么样') || message.includes('如何') || message.includes('好吗')) {
+          
           const responses = [
             ['我很好呀！', '每天都很开心 😄'],
             ['还不错还不错', '和你聊天更开心了！'],
@@ -4512,7 +4560,7 @@
             ['嗯嗯，挺好的', '谢谢关心～❤️'],
           ];
           const result = responses[Math.floor(Math.random() * responses.length)];
-
+          
           return result;
         }
 
@@ -4529,6 +4577,8 @@
           return ['不客气！', '能帮到你就好～😊'];
         }
 
+        
+
         // 如果没有特殊回复，有小概率返回多条聊天式回复
         const randomChat = Math.random();
         if (randomChat < 0.15) {
@@ -4542,7 +4592,7 @@
             ['嗯', '今天天气不错呢，你在忙什么？'],
           ];
           const result = randomReplies[Math.floor(Math.random() * randomReplies.length)];
-
+          
           return result;
         }
 
@@ -4602,7 +4652,9 @@
               systemPrompt += `\n\n请根据以上世界设定信息进行角色扮演和对话，确保回复符合设定的世界观。`;
             }
           }
-        } catch (error) {}
+        } catch (error) {
+          
+        }
 
         // 用户信息
         let userInfo = '';
@@ -4652,7 +4704,9 @@
               });
             }
           }
-        } catch (error) {}
+        } catch (error) {
+          
+        }
 
         if (userInfo || currentSettings.userPersonality || currentSettings.userBackground) {
           systemPrompt += `\n请根据这些用户信息进行更个性化的交流，适应用户的性格和背景。`;
@@ -4702,6 +4756,8 @@ ${emojiList}
           chatHistory.push({ role: 'user', content: userMessage });
         }
 
+        
+
         const body = {
           model: config.model || 'gpt-3.5-turbo',
           messages: chatHistory,
@@ -4712,6 +4768,8 @@ ${emojiList}
         if (config.max_tokens && parseInt(config.max_tokens) > 0) {
           body.max_tokens = parseInt(config.max_tokens);
         }
+
+        
 
         // 使用标准的 /v1/chat/completions 端点
         const baseUrl = (config.url || 'https://api.openai.com').replace(/\/$/, '');
@@ -4738,11 +4796,14 @@ ${emojiList}
           throw new Error(`OpenAI API错误 ${response.status}: ${errorData.error?.message || errorText || '未知错误'}`);
         }
 
+        
         const data = await response.json();
-
+        
         const aiResponse = data.choices?.[0]?.message?.content || 'AI 没有返回内容。';
+        
 
         // 尝试解析多条消息格式 (JSON数组)
+        
 
         try {
           // 清理可能的多余字符
@@ -4754,6 +4815,7 @@ ${emojiList}
             const jsonEnd = cleanResponse.indexOf('```', jsonStart);
             if (jsonEnd > jsonStart) {
               cleanResponse = cleanResponse.substring(jsonStart, jsonEnd).trim();
+              
             }
           }
 
@@ -4763,15 +4825,22 @@ ${emojiList}
             const jsonEnd = cleanResponse.lastIndexOf('```');
             if (jsonEnd > jsonStart) {
               cleanResponse = cleanResponse.substring(jsonStart, jsonEnd).trim();
+              
             }
           }
 
+          
+
           const parsedResponse = JSON.parse(cleanResponse);
           if (Array.isArray(parsedResponse) && parsedResponse.length > 0) {
+            
             return parsedResponse;
           } else {
+            
           }
-        } catch (e) {}
+        } catch (e) {
+          
+        }
 
         // 如果不是有效的JSON数组，返回原始回复
         return aiResponse;
@@ -4815,8 +4884,10 @@ ${emojiList}
 
         const data = await response.json();
         const aiResponse = data.candidates[0].content.parts[0].text;
+        
 
         // 尝试解析多条消息格式 (JSON数组)
+        
 
         try {
           // 清理可能的多余字符
@@ -4828,6 +4899,7 @@ ${emojiList}
             const jsonEnd = cleanResponse.indexOf('```', jsonStart);
             if (jsonEnd > jsonStart) {
               cleanResponse = cleanResponse.substring(jsonStart, jsonEnd).trim();
+              
             }
           }
 
@@ -4837,15 +4909,22 @@ ${emojiList}
             const jsonEnd = cleanResponse.lastIndexOf('```');
             if (jsonEnd > jsonStart) {
               cleanResponse = cleanResponse.substring(jsonStart, jsonEnd).trim();
+              
             }
           }
 
+          
+
           const parsedResponse = JSON.parse(cleanResponse);
           if (Array.isArray(parsedResponse) && parsedResponse.length > 0) {
+            
             return parsedResponse;
           } else {
+            
           }
-        } catch (e) {}
+        } catch (e) {
+          
+        }
 
         // 如果不是有效的JSON数组，返回原始回复
         return aiResponse;
@@ -4906,78 +4985,65 @@ ${emojiList}
 
       // 保存设置（按聊天ID分别保存）
       function saveSettings() {
-        try {
-          
+        const getVal = (id, fallback = '') => {
+          const el = document.getElementById(id);
+          return (el && el.value.trim()) || fallback;
+        };
+        currentSettings.userName = getVal('userName', '用户');
+        currentSettings.userAge = getVal('userAge', '');
+        currentSettings.userHobby = getVal('userHobby', '');
+        currentSettings.userPersonality = getVal('userPersonality', '');
+        currentSettings.userBackground = getVal('userBackground', '');
+        currentSettings.aiName = getVal('aiName', 'AI助手');
+        currentSettings.aiAge = getVal('aiAge', '');
+        currentSettings.aiHobby = getVal('aiHobby', '');
+        currentSettings.aiPersonality = getVal('aiPersonality', '你是一个友善、专业的AI助手。');
+        currentSettings.aiBackground = getVal('aiBackground', '');
 
-          const getVal = (id, fallback = '') => {
-            const el = document.getElementById(id);
-            return (el && el.value.trim()) || fallback;
-          };
-
-          // 检查必要的DOM元素是否存在
-          if (!document.getElementById('userName')) {
-            console.error('设置表单元素未找到');
-            showToast('设置表单未正确加载，请刷新页面重试');
-            return;
-          }
-
-          currentSettings.userName = getVal('userName', '用户');
-          currentSettings.userAge = getVal('userAge', '');
-          currentSettings.userHobby = getVal('userHobby', '');
-          currentSettings.userPersonality = getVal('userPersonality', '');
-          currentSettings.userBackground = getVal('userBackground', '');
-          currentSettings.aiName = getVal('aiName', 'AI助手');
-          currentSettings.aiAge = getVal('aiAge', '');
-          currentSettings.aiHobby = getVal('aiHobby', '');
-          currentSettings.aiPersonality = getVal('aiPersonality', '你是一个友善、专业的AI助手。');
-          currentSettings.aiBackground = getVal('aiBackground', '');
-
-          // 如果没有上传头像文件，则根据名称生成字母头像
-          if (!currentSettings.userAvatarFile) {
-            currentSettings.userAvatar = currentSettings.userName ? currentSettings.userName.charAt(0) : '用';
-          }
-          if (!currentSettings.aiAvatarFile) {
-            currentSettings.aiAvatar = currentSettings.aiName ? currentSettings.aiName.charAt(0) : 'AI';
-          }
-
-          const autoSaveEl = document.getElementById('autoSave');
-          if (autoSaveEl) currentSettings.autoSave = autoSaveEl.checked;
-          const soundEl = document.getElementById('soundEnabled');
-          if (soundEl) currentSettings.soundEnabled = soundEl.checked;
-          const worldBookEl = document.getElementById('worldBookEnabled');
-          if (worldBookEl) currentSettings.worldBookEnabled = worldBookEl.checked;
-
-          // 按聊天ID分别保存设置
-          const settingsKey = `chatSettings_${currentChatInfo.id}`;
-          localStorage.setItem(settingsKey, JSON.stringify(currentSettings));
-          
-
-          // 强制更新显示
-          updateAvatarDisplay('user', currentSettings.userAvatar, currentSettings.userAvatarFile);
-          updateAvatarDisplay('ai', currentSettings.aiAvatar, currentSettings.aiAvatarFile);
-
-          // 立即同步到聊天信息并更新UI
-          if (currentChatInfo.type === 'ai') {
-            currentChatInfo.name = currentSettings.aiName;
-            // 同时更新头像信息
-            if (currentSettings.aiAvatarFile) {
-              currentChatInfo.avatarFile = currentSettings.aiAvatarFile;
-              currentChatInfo.avatar = '';
-            } else {
-              currentChatInfo.avatar = currentSettings.aiAvatar;
-              currentChatInfo.avatarFile = '';
-            }
-          }
-
-          updateUI();
-          const panel = document.getElementById('settingsPanel');
-          if (panel) panel.classList.remove('visible');
-          showToast('设置已保存');
-          
-        } catch (error) {
-          console.error('保存设置时出错:', error);
-          showToast('保存设置失败: ' + error.message);
+        // 如果没有上传头像文件，则根据名称生成字母头像
+        if (!currentSettings.userAvatarFile) {
+          currentSettings.userAvatar = currentSettings.userName ? currentSettings.userName.charAt(0) : '用';
         }
+        if (!currentSettings.aiAvatarFile) {
+          
+          currentSettings.aiAvatar = currentSettings.aiName ? currentSettings.aiName.charAt(0) : 'AI';
+          
+        }
+
+        const autoSaveEl = document.getElementById('autoSave');
+        if (autoSaveEl) currentSettings.autoSave = autoSaveEl.checked;
+        const soundEl = document.getElementById('soundEnabled');
+        if (soundEl) currentSettings.soundEnabled = soundEl.checked;
+        const worldBookEl = document.getElementById('worldBookEnabled');
+        if (worldBookEl) currentSettings.worldBookEnabled = worldBookEl.checked;
+
+        // 按聊天ID分别保存设置
+        const settingsKey = `chatSettings_${currentChatInfo.id}`;
+        localStorage.setItem(settingsKey, JSON.stringify(currentSettings));
+        
+
+        // 强制更新显示
+        updateAvatarDisplay('user', currentSettings.userAvatar, currentSettings.userAvatarFile);
+        updateAvatarDisplay('ai', currentSettings.aiAvatar, currentSettings.aiAvatarFile);
+
+        // 立即同步到聊天信息并更新UI
+        if (currentChatInfo.type === 'ai') {
+          currentChatInfo.name = currentSettings.aiName;
+          // 同时更新头像信息
+          if (currentSettings.aiAvatarFile) {
+            currentChatInfo.avatarFile = currentSettings.aiAvatarFile;
+            currentChatInfo.avatar = '';
+          } else {
+            currentChatInfo.avatar = currentSettings.aiAvatar;
+            currentChatInfo.avatarFile = '';
+          }
+          
+        }
+
+        updateUI();
+        const panel = document.getElementById('settingsPanel');
+        if (panel) panel.classList.remove('visible');
+        showToast('设置已保存');
       }
 
       /* 统一的设置表单加载与保存逻辑已在后面新版函数中实现，旧版本已移除 */
@@ -4991,12 +5057,18 @@ ${emojiList}
         // 如果没有专用设置，尝试加载旧的通用设置作为默认值
         if (!saved) {
           saved = localStorage.getItem('chatSettings');
+          
         }
 
+        
         if (saved) {
           const parsedSettings = JSON.parse(saved);
+          
+          
 
           currentSettings = { ...currentSettings, ...parsedSettings };
+          
+          
 
           // 将设置值填回到表单字段中
           const userNameEl = document.getElementById('userName');
@@ -5026,47 +5098,20 @@ ${emojiList}
           // 更新头像显示
           updateAvatarDisplay('user', currentSettings.userAvatar, currentSettings.userAvatarFile);
           updateAvatarDisplay('ai', currentSettings.aiAvatar, currentSettings.aiAvatarFile);
+
+          
         } else {
+          
         }
       }
 
       // 保存聊天记录
       function saveChatHistory() {
-        try {
-          const chatKey = `chatHistory_${currentChatInfo.id}`;
-          const dataToSave = JSON.stringify(messages);
+        const chatKey = `chatHistory_${currentChatInfo.id}`;
+        localStorage.setItem(chatKey, JSON.stringify(messages));
 
-          // 检查数据大小，防止保存过大的数据
-          if (dataToSave.length > 5000000) {
-            // 5MB限制
-            console.warn('聊天记录过大，进行清理:', dataToSave.length, '字符');
-            // 只保留最近的100条消息
-            const recentMessages = messages.slice(-100);
-            localStorage.setItem(chatKey, JSON.stringify(recentMessages));
-            // 更新内存中的消息数组
-            messages.splice(0, messages.length - 100);
-            showToast('聊天记录过多，已自动清理旧消息');
-          } else {
-            localStorage.setItem(chatKey, dataToSave);
-          }
-
-          // 同时更新QQ界面的最后消息
-          updateQQLastMessage();
-        } catch (e) {
-          console.error('保存聊天记录失败:', e);
-          // 如果保存失败，尝试清理后再保存
-          if (messages.length > 50) {
-            const recentMessages = messages.slice(-50);
-            try {
-              localStorage.setItem(`chatHistory_${currentChatInfo.id}`, JSON.stringify(recentMessages));
-              messages.splice(0, messages.length - 50);
-              showToast('存储空间不足，已清理部分聊天记录');
-            } catch (e2) {
-              console.error('清理后仍无法保存:', e2);
-              showToast('存储空间不足，无法保存聊天记录');
-            }
-          }
-        }
+        // 同时更新QQ界面的最后消息
+        updateQQLastMessage();
       }
 
       // 更新QQ界面的最后消息
@@ -5155,12 +5200,13 @@ ${emojiList}
         let messageContent;
 
         if (isRedPacket) {
+          
           // 解析红包信息 - 新格式: 🧧 祝福语|金额
           const redPacketMatch = messageText.match(/🧧\s*(.+)\|(.+)/);
           if (redPacketMatch) {
             const bless = redPacketMatch[1].trim();
             const amount = redPacketMatch[2].trim();
-
+            
             messageContent = `
               <div class="redpacket-content" data-amount="${amount}">
                 <span class="redpacket-icon">🧧</span>
@@ -5171,9 +5217,11 @@ ${emojiList}
               </div>
             `;
           } else {
+            
             messageContent = escapeHtml(messageText);
           }
         } else if (isTransfer) {
+          
           // 解析转账信息 - 格式: 💸 向你转账/已接受转账/退还转账 100.00元 或 💸 向你转账 100.00元 - 说明
           const transferMatch = messageText.match(
             /💸\s*(?:向你转账|已接受转账|退还转账)\s*(\d+\.?\d*)元(?:\s*-\s*(.+))?/,
@@ -5182,7 +5230,7 @@ ${emojiList}
             const amount = transferMatch[1].trim();
             const msg = transferMatch[2] ? transferMatch[2].trim() : '转账';
             const isAccepted = messageText.includes('已接受转账');
-
+            
             messageContent = `
               <div class="transfer-content" data-amount="${amount}" data-message="${msg}" ${
               isAccepted ? 'data-accepted="true"' : ''
@@ -5196,17 +5244,19 @@ ${emojiList}
               </div>
             `;
           } else {
+            
             messageContent = escapeHtml(messageText);
           }
         } else if (messageText.startsWith('[表情包:') && messageText.endsWith(']')) {
           // 处理表情包消息
-
+          
           const emojiMatch = messageText.match(/\[表情包:(.+)\]/);
           if (emojiMatch) {
             const emojiSrc = emojiMatch[1];
-
+            
             messageContent = `<img src="${emojiSrc}" alt="表情包" style="max-width: 120px; max-height: 120px; border-radius: 8px;" onerror="this.alt='[表情包加载失败]'; this.style.display='none'; this.nextSibling.style.display='inline'"><span style="display:none">[表情包]</span>`;
           } else {
+            
             messageContent = escapeHtml(messageText);
           }
         } else {
@@ -5283,7 +5333,9 @@ ${emojiList}
       function updateUI() {
         // 如果是AI聊天，同步AI设置到聊天信息
         if (currentChatInfo.type === 'ai') {
-          //console.log('updateUI - 当前currentChatInfo头像状态:', {
+          
+          
+          console.log('updateUI - 当前currentChatInfo头像状态:', {
             avatarFile: currentChatInfo.avatarFile,
             avatar: currentChatInfo.avatar,
           });
@@ -5292,6 +5344,7 @@ ${emojiList}
           const saved = localStorage.getItem('chatSettings');
           if (saved) {
             const latestSettings = JSON.parse(saved);
+            
 
             // 更新AI名称
             if (latestSettings.aiName) {
@@ -5301,16 +5354,20 @@ ${emojiList}
 
             // 更新头像信息（仅当currentChatInfo没有头像或头像为空时）
             if (!currentChatInfo.avatarFile && (!currentChatInfo.avatar || currentChatInfo.avatar === '?')) {
+              
               if (latestSettings.aiAvatarFile) {
                 currentChatInfo.avatarFile = latestSettings.aiAvatarFile;
                 currentChatInfo.avatar = '';
                 currentSettings.aiAvatarFile = latestSettings.aiAvatarFile;
+                
               } else if (latestSettings.aiAvatar) {
                 currentChatInfo.avatar = latestSettings.aiAvatar;
                 currentChatInfo.avatarFile = '';
                 currentSettings.aiAvatar = latestSettings.aiAvatar;
+                
               }
             } else {
+              
               // 只同步到currentSettings，不覆盖currentChatInfo
               if (latestSettings.aiAvatarFile) {
                 currentSettings.aiAvatarFile = latestSettings.aiAvatarFile;
@@ -5319,7 +5376,7 @@ ${emojiList}
               }
             }
 
-            //console.log('updateUI - 最终头像状态:', {
+            console.log('updateUI - 最终头像状态:', {
               'currentChatInfo.avatarFile': currentChatInfo.avatarFile,
               'currentChatInfo.avatar': currentChatInfo.avatar,
               'currentSettings.aiAvatarFile': currentSettings.aiAvatarFile,
@@ -5357,6 +5414,29 @@ ${emojiList}
         return div.innerHTML;
       }
 
+      function showToast(message) {
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: rgba(0,0,0,0.8);
+          color: white;
+          padding: 12px 20px;
+          border-radius: 20px;
+          font-size: 14px;
+          z-index: 1000;
+          pointer-events: none;
+        `;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+          document.body.removeChild(toast);
+        }, 2000);
+      }
+
       function playNotificationSound() {
         // 创建简单的提示音（如果浏览器支持）
         try {
@@ -5382,4 +5462,3 @@ ${emojiList}
     </script>
   </body>
 </html>
-

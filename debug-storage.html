@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Debug Storage</title>
+  </head>
+  <body>
+    <h1>LocalStorage Debug</h1>
+    <div id="result"></div>
+    <script>
+      const resultDiv = document.getElementById('result');
+      let html = '<h1>完整LocalStorage调试</h1>';
+
+      // 检查所有localStorage项
+      html += '<h2>所有localStorage项:</h2>';
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const value = localStorage.getItem(key);
+        html += `<p><strong>${key}:</strong> ${value}</p>`;
+      }
+
+      // 详细检查chatSettings
+      const saved = localStorage.getItem('chatSettings');
+      if (saved) {
+        const settings = JSON.parse(saved);
+        html += `
+          <h2>ChatSettings 详细分析:</h2>
+          <p><strong>原始JSON:</strong></p>
+          <pre>${saved}</pre>
+          <p><strong>aiName:</strong> "${settings.aiName}" (类型: ${typeof settings.aiName})</p>
+          <p><strong>aiAvatar:</strong> "${settings.aiAvatar}" (类型: ${typeof settings.aiAvatar})</p>
+          <p><strong>aiName第一个字符:</strong> "${settings.aiName ? settings.aiName.charAt(0) : 'N/A'}"</p>
+          <p><strong>aiName字符码:</strong> ${settings.aiName ? settings.aiName.charCodeAt(0) : 'N/A'}</p>
+          <p><strong>"999"的字符码:</strong> ${String(999).charCodeAt ? 'NaN' : '不是字符'}</p>
+          <p><strong>字符码999对应的字符:</strong> "${String.fromCharCode(999)}"</p>
+          <h3>完整settings对象:</h3>
+          <pre>${JSON.stringify(settings, null, 2)}</pre>
+        `;
+      } else {
+        html += '<p>没有找到chatSettings</p>';
+      }
+
+      // 检查qqChatData
+      const qqData = localStorage.getItem('qqChatData');
+      if (qqData) {
+        html += '<h2>QQ聊天数据:</h2>';
+        try {
+          const parsed = JSON.parse(qqData);
+          const aiChat = parsed.find(chat => chat.id === 'ai_assistant');
+          if (aiChat) {
+            html += `<p><strong>AI助手信息:</strong></p>`;
+            html += `<pre>${JSON.stringify(aiChat, null, 2)}</pre>`;
+          }
+        } catch (e) {
+          html += `<p>解析QQ数据失败: ${e.message}</p>`;
+        }
+      }
+
+      resultDiv.innerHTML = html;
+    </script>
+  </body>
+</html>

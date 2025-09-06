@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>QQ调试测试</title>
+  </head>
+  <body>
+    <h1>QQ页面调试测试</h1>
+    <button onclick="testQQLoad()">测试QQ加载逻辑</button>
+    <div id="result"></div>
+
+    <script>
+      function testQQLoad() {
+        const resultDiv = document.getElementById('result');
+        let output = '<h2>测试结果:</h2>';
+
+        // 1. 检查localStorage
+        const saved = localStorage.getItem('chatSettings');
+        output += `<p><strong>localStorage chatSettings:</strong> ${saved}</p>`;
+
+        if (saved) {
+          const settings = JSON.parse(saved);
+          output += `<p><strong>解析后 aiName:</strong> "${settings.aiName}"</p>`;
+          output += `<p><strong>解析后 aiAvatar:</strong> "${settings.aiAvatar}"</p>`;
+
+          // 2. 测试头像字母生成
+          const generatedAvatar = settings.aiName ? settings.aiName.charAt(0) : 'AI';
+          output += `<p><strong>重新生成的头像字母:</strong> "${generatedAvatar}"</p>`;
+
+          // 3. 模拟AI助手数据更新
+          const aiChat = {
+            id: 'ai_assistant',
+            name: '999',
+            avatar: '999',
+          };
+
+          output += `<p><strong>更新前 AI助手:</strong> 名称="${aiChat.name}", 头像="${aiChat.avatar}"</p>`;
+
+          // 应用更新
+          aiChat.name = settings.aiName || 'AI助手';
+          aiChat.avatar = settings.aiName ? settings.aiName.charAt(0) : 'AI';
+
+          output += `<p><strong>更新后 AI助手:</strong> 名称="${aiChat.name}", 头像="${aiChat.avatar}"</p>`;
+        }
+
+        resultDiv.innerHTML = output;
+      }
+    </script>
+  </body>
+</html>
