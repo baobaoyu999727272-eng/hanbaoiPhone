@@ -1813,6 +1813,90 @@
         console.log('全局变量检查完成');
       }
 
+      // 生产环境localStorage安全封装
+      const SafeStorage = {
+        setItem: function (key, value) {
+          try {
+            // 检查存储环境
+            if (typeof Storage === 'undefined') {
+              console.warn('当前环境不支持localStorage');
+              return false;
+            }
+
+            // 检查数据大小
+            const dataSize = new Blob([value]).size;
+            const maxSize = 5 * 1024 * 1024; // 5MB限制
+
+            if (dataSize > maxSize) {
+              console.warn(`数据过大 (${(dataSize / 1024 / 1024).toFixed(2)}MB)，尝试压缩`);
+              // 如果是设置数据，尝试压缩
+              if (key.includes('chatSettings')) {
+                const parsed = JSON.parse(value);
+                if (parsed.userAvatarFile && parsed.userAvatarFile.length > 100000) {
+                  parsed.userAvatarFile = null;
+                  console.warn('移除用户头像以减少存储');
+                }
+                if (parsed.aiAvatarFile && parsed.aiAvatarFile.length > 100000) {
+                  parsed.aiAvatarFile = null;
+                  console.warn('移除AI头像以减少存储');
+                }
+                value = JSON.stringify(parsed);
+              }
+            }
+
+            localStorage.setItem(key, value);
+            return true;
+          } catch (e) {
+            console.error('localStorage保存失败:', e.message);
+            if (e.name === 'QuotaExceededError') {
+              this.cleanup();
+              try {
+                localStorage.setItem(key, value);
+                return true;
+              } catch (e2) {
+                console.error('清理后仍无法保存');
+                return false;
+              }
+            }
+            return false;
+          }
+        },
+
+        getItem: function (key) {
+          try {
+            return localStorage.getItem(key);
+          } catch (e) {
+            console.error('localStorage读取失败:', e.message);
+            return null;
+          }
+        },
+
+        removeItem: function (key) {
+          try {
+            localStorage.removeItem(key);
+            return true;
+          } catch (e) {
+            console.error('localStorage删除失败:', e.message);
+            return false;
+          }
+        },
+
+        cleanup: function () {
+          let cleaned = 0;
+          try {
+            for (let key in localStorage) {
+              if (key.startsWith('chatHistory_') || key.startsWith('qqChatData')) {
+                localStorage.removeItem(key);
+                cleaned++;
+              }
+            }
+            console.log(`清理了${cleaned}个旧数据项`);
+          } catch (e) {
+            console.error('清理失败:', e.message);
+          }
+        },
+      };
+
       // 全局变量
       let messages = [];
       let isAITyping = false;
@@ -1863,6 +1947,20 @@
       document.addEventListener('DOMContentLoaded', function () {
         // 立即进行全局变量检查
         validateGlobalVariables();
+
+        // 生产环境检测和提示
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+          console.log('🌐 检测到生产环境部署，已启用安全存储模式');
+          // 检查localStorage是否可用
+          try {
+            localStorage.setItem('test_storage', 'test');
+            localStorage.removeItem('test_storage');
+            console.log('✅ localStorage可用');
+          } catch (e) {
+            console.error('❌ localStorage不可用:', e.message);
+            showToast('警告：浏览器存储功能受限，设置可能无法保存');
+          }
+        }
 
         // 立即更新时间
         updateTime();
@@ -3066,7 +3164,21 @@
 
             // 更新显示
             updateAvatarDisplay(type, '', base64);
-            showToast('头像上传成功');
+
+            // 立即保存到localStorage（使用安全存储）
+            if (currentChatInfo && currentChatInfo.id) {
+              const settingsKey = `chatSettings_${currentChatInfo.id}`;
+              const success = SafeStorage.setItem(settingsKey, JSON.stringify(currentSettings));
+              if (success) {
+                showToast('头像上传并保存成功');
+                console.log('✅ 头像已安全保存');
+              } else {
+                showToast('头像上传成功，但保存失败，请手动保存设置');
+                console.warn('❌ 头像保存失败，可能是存储空间不足');
+              }
+            } else {
+              showToast('头像上传成功，但聊天信息未初始化');
+            }
           };
 
           reader.readAsDataURL(file);
@@ -5017,10 +5129,18 @@ ${emojiList}
         const worldBookEl = document.getElementById('worldBookEnabled');
         if (worldBookEl) currentSettings.worldBookEnabled = worldBookEl.checked;
 
-        // 按聊天ID分别保存设置
+        // 按聊天ID分别保存设置（使用安全存储）
         const settingsKey = `chatSettings_${currentChatInfo.id}`;
-        localStorage.setItem(settingsKey, JSON.stringify(currentSettings));
-        console.log('设置已保存到localStorage，键名:', settingsKey, '数据:', currentSettings);
+        const success = SafeStorage.setItem(settingsKey, JSON.stringify(currentSettings));
+
+        if (success) {
+          console.log('✅ 设置已安全保存到localStorage，键名:', settingsKey);
+          showToast('设置已保存');
+        } else {
+          console.error('❌ 设置保存失败');
+          showToast('设置保存失败，存储空间可能不足');
+          return; // 保存失败则不继续执行后续操作
+        }
 
         // 强制更新显示
         updateAvatarDisplay('user', currentSettings.userAvatar, currentSettings.userAvatarFile);
@@ -5052,66 +5172,78 @@ ${emojiList}
       function loadSettings() {
         // 先尝试加载当前聊天的专用设置
         const settingsKey = `chatSettings_${currentChatInfo.id}`;
-        let saved = localStorage.getItem(settingsKey);
+        let saved = SafeStorage.getItem(settingsKey);
 
         // 如果没有专用设置，尝试加载旧的通用设置作为默认值
         if (!saved) {
-          saved = localStorage.getItem('chatSettings');
+          saved = SafeStorage.getItem('chatSettings');
           console.log('没有找到专用设置，使用通用设置作为默认值');
         }
 
-        console.log('loadSettings - 从localStorage读取的原始数据:', saved, '键名:', settingsKey);
+        console.log('✅ loadSettings - 从localStorage读取数据，键名:', settingsKey);
         if (saved) {
-          const parsedSettings = JSON.parse(saved);
-          console.log('loadSettings - 解析后的设置:', parsedSettings);
-          console.log('loadSettings - 其中aiName:', parsedSettings.aiName);
+          try {
+            const parsedSettings = JSON.parse(saved);
+            console.log('✅ 解析设置成功，AI名称:', parsedSettings.aiName);
+            console.log('🖼️ 头像文件状态:', {
+              userAvatarFile: !!parsedSettings.userAvatarFile,
+              aiAvatarFile: !!parsedSettings.aiAvatarFile,
+            });
 
-          currentSettings = { ...currentSettings, ...parsedSettings };
-          console.log('loadSettings - 合并后的currentSettings:', currentSettings);
-          console.log('loadSettings - 合并后的currentSettings.aiName:', currentSettings.aiName);
-
-          // 将设置值填回到表单字段中
-          const userNameEl = document.getElementById('userName');
-          const userAgeEl = document.getElementById('userAge');
-          const userHobbyEl = document.getElementById('userHobby');
-          const userPersonalityEl = document.getElementById('userPersonality');
-          const userBackgroundEl = document.getElementById('userBackground');
-          const aiNameEl = document.getElementById('aiName');
-          const aiAgeEl = document.getElementById('aiAge');
-          const aiHobbyEl = document.getElementById('aiHobby');
-          const aiPersonalityEl = document.getElementById('aiPersonality');
-          const aiBackgroundEl = document.getElementById('aiBackground');
-          const soundEl = document.getElementById('soundEnabled');
-
-          if (userNameEl) userNameEl.value = currentSettings.userName || '';
-          if (userAgeEl) userAgeEl.value = currentSettings.userAge || '';
-          if (userHobbyEl) userHobbyEl.value = currentSettings.userHobby || '';
-          if (userPersonalityEl) userPersonalityEl.value = currentSettings.userPersonality || '';
-          if (userBackgroundEl) userBackgroundEl.value = currentSettings.userBackground || '';
-          if (aiNameEl) aiNameEl.value = currentSettings.aiName || 'AI助手';
-          if (aiAgeEl) aiAgeEl.value = currentSettings.aiAge || '';
-          if (aiHobbyEl) aiHobbyEl.value = currentSettings.aiHobby || '';
-          if (aiPersonalityEl) aiPersonalityEl.value = currentSettings.aiPersonality || '你是一个友善、聪明的AI助手。';
-          if (aiBackgroundEl) aiBackgroundEl.value = currentSettings.aiBackground || '';
-          if (soundEl) soundEl.checked = currentSettings.soundEnabled || false;
-
-          // 更新头像显示
-          updateAvatarDisplay('user', currentSettings.userAvatar, currentSettings.userAvatarFile);
-          updateAvatarDisplay('ai', currentSettings.aiAvatar, currentSettings.aiAvatarFile);
-
-          console.log('设置已从localStorage加载:', currentSettings);
+            currentSettings = { ...currentSettings, ...parsedSettings };
+            console.log('✅ 设置合并完成');
+          } catch (e) {
+            console.error('❌ 设置解析失败:', e.message);
+            return;
+          }
         } else {
-          console.log('loadSettings - 没有找到保存的设置');
+          console.log('⚠️ 没有找到保存的设置');
         }
+
+        // 将设置值填回到表单字段中
+        const setVal = (id, value) => {
+          const el = document.getElementById(id);
+          if (el) el.value = value || '';
+        };
+
+        setVal('userName', currentSettings.userName);
+        setVal('userAge', currentSettings.userAge);
+        setVal('userHobby', currentSettings.userHobby);
+        setVal('userPersonality', currentSettings.userPersonality);
+        setVal('userBackground', currentSettings.userBackground);
+        setVal('aiName', currentSettings.aiName);
+        setVal('aiAge', currentSettings.aiAge);
+        setVal('aiHobby', currentSettings.aiHobby);
+        setVal('aiPersonality', currentSettings.aiPersonality);
+        setVal('aiBackground', currentSettings.aiBackground);
+
+        // 复选框
+        const autoSaveEl = document.getElementById('autoSave');
+        if (autoSaveEl) autoSaveEl.checked = currentSettings.autoSave || false;
+        const soundEl = document.getElementById('soundEnabled');
+        if (soundEl) soundEl.checked = currentSettings.soundEnabled || false;
+        const worldBookEl = document.getElementById('worldBookEnabled');
+        if (worldBookEl) worldBookEl.checked = currentSettings.worldBookEnabled || false;
+
+        // 更新头像显示
+        updateAvatarDisplay('user', currentSettings.userAvatar, currentSettings.userAvatarFile);
+        updateAvatarDisplay('ai', currentSettings.aiAvatar, currentSettings.aiAvatarFile);
+
+        console.log('✅ 设置加载和显示更新完成');
       }
 
       // 保存聊天记录
       function saveChatHistory() {
         const chatKey = `chatHistory_${currentChatInfo.id}`;
-        localStorage.setItem(chatKey, JSON.stringify(messages));
+        const success = SafeStorage.setItem(chatKey, JSON.stringify(messages));
 
-        // 同时更新QQ界面的最后消息
-        updateQQLastMessage();
+        if (success) {
+          console.log('✅ 聊天记录已保存');
+          // 同时更新QQ界面的最后消息
+          updateQQLastMessage();
+        } else {
+          console.warn('❌ 聊天记录保存失败');
+        }
       }
 
       // 更新QQ界面的最后消息
