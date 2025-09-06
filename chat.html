@@ -1923,7 +1923,7 @@
           saveBtn.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             saveSettings();
           });
         }
@@ -2093,6 +2093,29 @@
             return true;
           }
 
+          // 检查URL参数长度
+          if (window.location.search.length > 1500) {
+            console.warn('URL参数过长，自动清理');
+            // 只保留基本的聊天参数
+            const urlParams = new URLSearchParams(window.location.search);
+            const chatId = urlParams.get('chatId');
+            const chatName = urlParams.get('chatName');
+            const chatType = urlParams.get('type');
+
+            if (chatId) {
+              const cleanParams = new URLSearchParams();
+              cleanParams.set('chatId', chatId);
+              if (chatName) cleanParams.set('chatName', chatName);
+              if (chatType) cleanParams.set('type', chatType);
+
+              const newUrl = window.location.pathname + '?' + cleanParams.toString();
+              window.history.replaceState({}, '', newUrl);
+            } else {
+              window.history.replaceState({}, '', window.location.pathname);
+            }
+            return true;
+          }
+
           // 检查localStorage中是否有超大数据
           for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
@@ -2126,20 +2149,13 @@
         const chatAvatarFile = urlParams.get('chatAvatarFile');
         const chatType = urlParams.get('type');
 
-        //console.log('initFromQQParams - URL参数:', {
-          chatId,
-          chatName,
-          chatAvatar,
-          chatAvatarFile,
-          chatType,
-        });
-
         if (chatId) {
           currentChatInfo = {
             id: chatId,
-            name: decodeURIComponent(chatName || '未知联系人'),
-            avatar: decodeURIComponent(chatAvatar || '?'),
-            avatarFile: chatAvatarFile ? decodeURIComponent(chatAvatarFile) : '',
+            name: chatName ? decodeURIComponent(chatName) : '未知联系人',
+            avatar: chatAvatar ? decodeURIComponent(chatAvatar) : '?',
+            // 不从URL传递头像文件，避免base64过长
+            avatarFile: '',
             type: chatType || 'friend',
             status: chatType === 'ai' ? '在线' : '最后上线刚刚',
             createTime: new Date(),
@@ -2169,12 +2185,6 @@
                 // 强制重新生成头像字母，不使用URL传递的值
                 currentChatInfo.avatar = settings.aiName ? settings.aiName.charAt(0) : 'AI';
                 currentChatInfo.avatarFile = '';
-                //console.log(
-                  'initFromQQParams - 重新生成AI头像字母:',
-                  currentChatInfo.avatar,
-                  '来源名称:',
-                  settings.aiName,
-                );
               }
             }
           }
@@ -2274,14 +2284,14 @@
           // 清空消息显示
           const messagesArea = document.getElementById('messagesArea');
           messagesArea.innerHTML = `
-            <div class="message received">
-              <div class="message-avatar">${currentChatInfo.avatar}</div>
-              <div>
-                <div class="message-bubble">聊天记录已清空</div>
-                <div class="message-time">刚刚</div>
-              </div>
-            </div>
-          `;
+                  <div class="message received">
+                    <div class="message-avatar">${currentChatInfo.avatar}</div>
+                    <div>
+                      <div class="message-bubble">聊天记录已清空</div>
+                      <div class="message-time">刚刚</div>
+                    </div>
+                  </div>
+                `;
 
           // 更新消息计数
           document.getElementById('messageCount').textContent = '0条';
@@ -2326,7 +2336,6 @@
                     freedSpace += value.length;
                     localStorage.removeItem(key);
                     cleanedItems++;
-                    
                   }
                   // 清理旧的聊天记录（保留最近的）
                   else if (key.startsWith('chatHistory_') && value.length > 500000) {
@@ -2337,7 +2346,6 @@
                         localStorage.setItem(key, JSON.stringify(recentMessages));
                         freedSpace += value.length - JSON.stringify(recentMessages).length;
                         cleanedItems++;
-                        
                       }
                     } catch (e) {
                       // 如果解析失败，直接删除
@@ -2711,19 +2719,19 @@
         // 创建提示元素
         const toast = document.createElement('div');
         toast.style.cssText = `
-          position: fixed;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          background: rgba(0, 0, 0, 0.8);
-          color: white;
-          padding: 12px 24px;
-          border-radius: 20px;
-          font-size: 14px;
-          z-index: 10000;
-          backdrop-filter: blur(10px);
-          transition: opacity 0.3s ease;
-        `;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 20px;
+                font-size: 14px;
+                z-index: 10000;
+                backdrop-filter: blur(10px);
+                transition: opacity 0.3s ease;
+              `;
         toast.textContent = message;
 
         document.body.appendChild(toast);
@@ -2791,65 +2799,65 @@
 
         // 创建表情包管理弹窗
         const managerHtml = `
-          <div id="emojiManagerOverlay" style="
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 2000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;
-          ">
-            <div style="
-              background: white;
-              border-radius: 16px;
-              width: 100%;
-              max-width: 450px;
-              max-height: 85vh;
-              overflow: hidden;
-              position: relative;
-              margin: auto;
-            ">
-              <div style="
-                padding: 12px 16px;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                font-weight: 600;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                min-height: 40px;
-              ">
-                <span>表情包管理</span>
-                <button onclick="closeEmojiManager()" style="
-                  background: none;
-                  border: none;
-                  color: white;
-                  font-size: 18px;
-                  cursor: pointer;
-                  padding: 0;
-                  width: 24px;
-                  height: 24px;
-                  border-radius: 50%;
+                <div id="emojiManagerOverlay" style="
+                  position: fixed;
+                  top: 0;
+                  left: 0;
+                  right: 0;
+                  bottom: 0;
+                  background: rgba(0, 0, 0, 0.5);
+                  z-index: 2000;
                   display: flex;
                   align-items: center;
                   justify-content: center;
-                ">×</button>
-              </div>
-              <iframe src="biaoqingbao.html${window.location.search}" style="
-                width: 100%;
-                height: calc(85vh - 60px);
-                max-height: 500px;
-                border: none;
-                display: block;
-              "></iframe>
-            </div>
-          </div>
-        `;
+                  padding: 10px;
+                ">
+                  <div style="
+                    background: white;
+                    border-radius: 16px;
+                    width: 100%;
+                    max-width: 450px;
+                    max-height: 85vh;
+                    overflow: hidden;
+                    position: relative;
+                    margin: auto;
+                  ">
+                    <div style="
+                      padding: 12px 16px;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      color: white;
+                      font-weight: 600;
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                      min-height: 40px;
+                    ">
+                      <span>表情包管理</span>
+                      <button onclick="closeEmojiManager()" style="
+                        background: none;
+                        border: none;
+                        color: white;
+                        font-size: 18px;
+                        cursor: pointer;
+                        padding: 0;
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                      ">×</button>
+                    </div>
+                    <iframe src="biaoqingbao.html" style="
+                      width: 100%;
+                      height: calc(85vh - 60px);
+                      max-height: 500px;
+                      border: none;
+                      display: block;
+                    "></iframe>
+                  </div>
+                </div>
+              `;
 
         document.body.insertAdjacentHTML('beforeend', managerHtml);
 
@@ -3484,14 +3492,14 @@
             const amount = redPacketMatch[2].trim();
 
             messageContent = `
-              <div class="redpacket-content" data-amount="${amount}">
-                <span class="redpacket-icon">🧧</span>
-                <div class="redpacket-info">
-                  <div class="redpacket-title">QQ红包</div>
-                  <div class="redpacket-bless">${bless}</div>
-                </div>
-              </div>
-            `;
+                    <div class="redpacket-content" data-amount="${amount}">
+                      <span class="redpacket-icon">🧧</span>
+                      <div class="redpacket-info">
+                        <div class="redpacket-title">QQ红包</div>
+                        <div class="redpacket-bless">${bless}</div>
+                      </div>
+                    </div>
+                  `;
           } else {
             messageContent = escapeHtml(text);
           }
@@ -3504,17 +3512,17 @@
             const isAccepted = text.includes('已接受转账');
 
             messageContent = `
-              <div class="transfer-content" data-amount="${amount}" data-message="${message}" ${
+                    <div class="transfer-content" data-amount="${amount}" data-message="${message}" ${
               isAccepted ? 'data-accepted="true"' : ''
             }>
-                <span class="transfer-icon">💸</span>
-                <div class="transfer-info">
-                  <div class="transfer-title">转账</div>
-                  <div class="transfer-amount">¥${amount}</div>
-                  <div class="transfer-message-text">${message}</div>
-                </div>
-              </div>
-            `;
+                      <span class="transfer-icon">💸</span>
+                      <div class="transfer-info">
+                        <div class="transfer-title">转账</div>
+                        <div class="transfer-amount">¥${amount}</div>
+                        <div class="transfer-message-text">${message}</div>
+                      </div>
+                    </div>
+                  `;
           } else {
             messageContent = escapeHtml(text);
           }
@@ -3537,17 +3545,17 @@
         const isEmoji = text.startsWith('[表情包:') && text.endsWith(']');
 
         messageDiv.innerHTML = `
-          <div class="message-avatar">${avatarHTML}</div>
-          <div>
-            <div class="message-bubble ${isRedPacket ? 'redpacket-message' : ''} ${
+                <div class="message-avatar">${avatarHTML}</div>
+                <div>
+                  <div class="message-bubble ${isRedPacket ? 'redpacket-message' : ''} ${
           isTransfer ? 'transfer-message' : ''
         } ${isEmoji ? 'emoji-message' : ''}" ${isRedPacket ? `onclick="openRedPacket('${messageId}')"` : ''} ${
           isTransfer ? `onclick="openTransfer('${messageId}')"` : ''
         }>${messageContent}</div>
-            <div class="message-time">${formatTime(new Date())}</div>
-          </div>
-          <button class="message-delete-btn" onclick="deleteMessage('${messageId}', event)">🗑️</button>
-        `;
+                  <div class="message-time">${formatTime(new Date())}</div>
+                </div>
+                <button class="message-delete-btn" onclick="deleteMessage('${messageId}', event)">🗑️</button>
+              `;
 
         messagesArea.appendChild(messageDiv);
 
@@ -3675,28 +3683,28 @@
 
         // 构建图片消息内容
         const imageContent = `
-          <div class="image-message">
-            <img src="${imageData.base64}" alt="${imageData.fileName}" class="message-image" onclick="previewImage('${
-          imageData.base64
-        }', '${imageData.fileName}')" />
-            <div class="image-info">
-              <span class="image-filename">${imageData.fileName}</span>
-              ${fileSizeText ? `<span class="image-filesize">${fileSizeText}</span>` : ''}
-              ${imageData.options.compress ? '<span class="image-tag">已压缩</span>' : ''}
-              ${imageData.options.watermark ? '<span class="image-tag">有水印</span>' : ''}
-              ${imageData.options.original ? '<span class="image-tag">原图</span>' : ''}
-            </div>
-          </div>
-        `;
+                <div class="image-message">
+                  <img src="${imageData.base64}" alt="${
+          imageData.fileName
+        }" class="message-image" onclick="previewImage('${imageData.base64}', '${imageData.fileName}')" />
+                  <div class="image-info">
+                    <span class="image-filename">${imageData.fileName}</span>
+                    ${fileSizeText ? `<span class="image-filesize">${fileSizeText}</span>` : ''}
+                    ${imageData.options.compress ? '<span class="image-tag">已压缩</span>' : ''}
+                    ${imageData.options.watermark ? '<span class="image-tag">有水印</span>' : ''}
+                    ${imageData.options.original ? '<span class="image-tag">原图</span>' : ''}
+                  </div>
+                </div>
+              `;
 
         messageDiv.innerHTML = `
-          <div class="message-avatar">${avatarHTML}</div>
-          <div class="message-content">
-            <div class="message-bubble image-bubble">${imageContent}</div>
-            <div class="message-time">${formatTime(new Date())}</div>
-          </div>
-          <button class="message-delete-btn" onclick="deleteMessage('${messageId}', event)">🗑️</button>
-        `;
+                <div class="message-avatar">${avatarHTML}</div>
+                <div class="message-content">
+                  <div class="message-bubble image-bubble">${imageContent}</div>
+                  <div class="message-time">${formatTime(new Date())}</div>
+                </div>
+                <button class="message-delete-btn" onclick="deleteMessage('${messageId}', event)">🗑️</button>
+              `;
 
         messagesArea.appendChild(messageDiv);
 
@@ -3739,12 +3747,12 @@
         };
 
         modal.innerHTML = `
-          <div class="image-preview-content">
-            <button class="image-preview-close" onclick="closeImagePreview()">&times;</button>
-            <img src="${base64}" alt="${fileName}" class="image-preview-img" />
-            <div class="image-preview-info">${fileName}</div>
-          </div>
-        `;
+                <div class="image-preview-content">
+                  <button class="image-preview-close" onclick="closeImagePreview()">&times;</button>
+                  <img src="${base64}" alt="${fileName}" class="image-preview-img" />
+                  <div class="image-preview-info">${fileName}</div>
+                </div>
+              `;
 
         document.body.appendChild(modal);
         modal.style.display = 'flex';
@@ -3796,48 +3804,48 @@
         // 创建红包弹窗
         const overlay = document.createElement('div');
         overlay.style.cssText = `
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.7);
-          z-index: 1000;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          animation: fadeIn 0.3s ease;
-        `;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.3s ease;
+              `;
 
         const popup = document.createElement('div');
         popup.style.cssText = `
-          background: linear-gradient(135deg, #ff6256 0%, #ff4d4d 100%);
-          border-radius: 16px;
-          padding: 40px 30px;
-          color: white;
-          text-align: center;
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-          max-width: 320px;
-          animation: popIn 0.3s ease;
-        `;
+                background: linear-gradient(135deg, #ff6256 0%, #ff4d4d 100%);
+                border-radius: 16px;
+                padding: 40px 30px;
+                color: white;
+                text-align: center;
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+                max-width: 320px;
+                animation: popIn 0.3s ease;
+              `;
 
         popup.innerHTML = `
-          <div style="font-size: 54px; margin-bottom: 20px;">🧧</div>
-          <div style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">恭喜发财！</div>
-          <div style="font-size: 15px; opacity: 0.9; margin-bottom: 16px;">${bless}</div>
-          <div style="font-size: 32px; font-weight: 700; margin-bottom: 24px; color: #ffeb3b; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">¥${amount}</div>
-          <button onclick="this.parentElement.parentElement.remove()" style="
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-          " onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">确定</button>
-        `;
+                <div style="font-size: 54px; margin-bottom: 20px;">🧧</div>
+                <div style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">恭喜发财！</div>
+                <div style="font-size: 15px; opacity: 0.9; margin-bottom: 16px;">${bless}</div>
+                <div style="font-size: 32px; font-weight: 700; margin-bottom: 24px; color: #ffeb3b; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">¥${amount}</div>
+                <button onclick="this.parentElement.parentElement.remove()" style="
+                  background: rgba(255, 255, 255, 0.15);
+                  border: 1px solid rgba(255, 255, 255, 0.3);
+                  color: white;
+                  padding: 12px 24px;
+                  border-radius: 8px;
+                  cursor: pointer;
+                  font-size: 15px;
+                  font-weight: 500;
+                  transition: all 0.2s ease;
+                " onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">确定</button>
+              `;
 
         overlay.appendChild(popup);
         document.body.appendChild(overlay); // 点击遮罩关闭
@@ -3850,15 +3858,15 @@
         // 添加动画样式
         const style = document.createElement('style');
         style.textContent = `
-          @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-          }
-          @keyframes popIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-          }
-        `;
+                @keyframes fadeIn {
+                  from { opacity: 0; }
+                  to { opacity: 1; }
+                }
+                @keyframes popIn {
+                  from { transform: scale(0.8); opacity: 0; }
+                  to { transform: scale(1); opacity: 1; }
+                }
+              `;
         document.head.appendChild(style);
       }
 
@@ -3866,56 +3874,56 @@
       function showClaimedRedPacket(bless, amount) {
         const overlay = document.createElement('div');
         overlay.style.cssText = `
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.7);
-          z-index: 1000;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          animation: fadeIn 0.3s ease;
-        `;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.3s ease;
+              `;
 
         const popup = document.createElement('div');
         popup.style.cssText = `
-          background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
-          border-radius: 16px;
-          padding: 40px 30px;
-          color: #666;
-          text-align: center;
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-          max-width: 320px;
-          animation: popIn 0.3s ease;
-          position: relative;
-          overflow: hidden;
-        `;
+                background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+                border-radius: 16px;
+                padding: 40px 30px;
+                color: #666;
+                text-align: center;
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+                max-width: 320px;
+                animation: popIn 0.3s ease;
+                position: relative;
+                overflow: hidden;
+              `;
 
         popup.innerHTML = `
-          <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; transform: rotate(45deg);"></div>
-          <div style="font-size: 50px; margin-bottom: 16px; opacity: 0.4;">🧧</div>
-          <div style="font-size: 22px; font-weight: 600; margin-bottom: 8px; color: #999;">手慢了</div>
-          <div style="font-size: 14px; margin-bottom: 12px; color: #aaa;">来晚了，红包被抢光了</div>
-          <div style="font-size: 13px; opacity: 0.6; margin-bottom: 20px; color: #bbb; font-style: italic;">${bless}</div>
-          <div style="background: rgba(0, 0, 0, 0.05); border-radius: 8px; padding: 8px 16px; margin-bottom: 24px; display: inline-block;">
-            <div style="font-size: 11px; color: #aaa; margin-bottom: 2px;">已被领取</div>
-            <div style="font-size: 16px; font-weight: 600; color: #999;">¥${amount}</div>
-          </div>
-          <button onclick="this.parentElement.parentElement.remove()" style="
-            background: linear-gradient(135deg, #ddd 0%, #bbb 100%);
-            border: none;
-            color: #666;
-            padding: 10px 24px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          " onmouseover="this.style.background='linear-gradient(135deg, #ccc 0%, #aaa 100%)'" onmouseout="this.style.background='linear-gradient(135deg, #ddd 0%, #bbb 100%)'">知道了</button>
-        `;
+                <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; transform: rotate(45deg);"></div>
+                <div style="font-size: 50px; margin-bottom: 16px; opacity: 0.4;">🧧</div>
+                <div style="font-size: 22px; font-weight: 600; margin-bottom: 8px; color: #999;">手慢了</div>
+                <div style="font-size: 14px; margin-bottom: 12px; color: #aaa;">来晚了，红包被抢光了</div>
+                <div style="font-size: 13px; opacity: 0.6; margin-bottom: 20px; color: #bbb; font-style: italic;">${bless}</div>
+                <div style="background: rgba(0, 0, 0, 0.05); border-radius: 8px; padding: 8px 16px; margin-bottom: 24px; display: inline-block;">
+                  <div style="font-size: 11px; color: #aaa; margin-bottom: 2px;">已被领取</div>
+                  <div style="font-size: 16px; font-weight: 600; color: #999;">¥${amount}</div>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" style="
+                  background: linear-gradient(135deg, #ddd 0%, #bbb 100%);
+                  border: none;
+                  color: #666;
+                  padding: 10px 24px;
+                  border-radius: 20px;
+                  cursor: pointer;
+                  font-size: 14px;
+                  font-weight: 500;
+                  transition: all 0.2s ease;
+                  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                " onmouseover="this.style.background='linear-gradient(135deg, #ccc 0%, #aaa 100%)'" onmouseout="this.style.background='linear-gradient(135deg, #ddd 0%, #bbb 100%)'">知道了</button>
+              `;
 
         overlay.appendChild(popup);
         document.body.appendChild(overlay);
@@ -3961,15 +3969,15 @@
             const claimedMark = document.createElement('div');
             claimedMark.className = 'claimed-mark';
             claimedMark.style.cssText = `
-              font-size: 9px;
-              color: #bbb;
-              margin-top: 3px;
-              background: rgba(0, 0, 0, 0.05);
-              padding: 1px 6px;
-              border-radius: 8px;
-              display: inline-block;
-              font-weight: 400;
-            `;
+                    font-size: 9px;
+                    color: #bbb;
+                    margin-top: 3px;
+                    background: rgba(0, 0, 0, 0.05);
+                    padding: 1px 6px;
+                    border-radius: 8px;
+                    display: inline-block;
+                    font-weight: 400;
+                  `;
             claimedMark.textContent = '已领取';
             redPacketInfo.appendChild(claimedMark);
           }
@@ -3996,67 +4004,67 @@
         // 创建转账弹窗
         const overlay = document.createElement('div');
         overlay.style.cssText = `
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.7);
-          z-index: 1000;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          animation: fadeIn 0.3s ease;
-        `;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.3s ease;
+              `;
 
         const popup = document.createElement('div');
         popup.style.cssText = `
-          background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-          border-radius: 16px;
-          padding: 40px 30px;
-          color: white;
-          text-align: center;
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-          max-width: 320px;
-          animation: popIn 0.3s ease;
-        `;
+                background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+                border-radius: 16px;
+                padding: 40px 30px;
+                color: white;
+                text-align: center;
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+                max-width: 320px;
+                animation: popIn 0.3s ease;
+              `;
 
         popup.innerHTML = `
-          <div style="font-size: 54px; margin-bottom: 20px;">💸</div>
-          <div style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">收到转账</div>
-          <div style="font-size: 15px; opacity: 0.9; margin-bottom: 16px;">${message}</div>
-          <div style="font-size: 32px; font-weight: 700; margin-bottom: 24px; color: #ffeb3b; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">¥${amount}</div>
-          <div style="display: flex; gap: 12px; justify-content: center;">
-            <button onclick="acceptTransfer('${messageId}', '${message}', '${amount}', this.parentElement.parentElement.parentElement)" style="
-              background: rgba(255, 255, 255, 0.15);
-              border: 1px solid rgba(255, 255, 255, 0.3);
-              color: white;
-              padding: 12px 24px;
-              border-radius: 8px;
-              cursor: pointer;
-              font-size: 15px;
-              font-weight: 500;
-              transition: all 0.2s ease;
-            " onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">接受</button>
-            ${
-              currentChatInfo.type === 'ai'
-                ? `
-            <button onclick="rejectTransfer('${messageId}', '${message}', '${amount}', this.parentElement.parentElement.parentElement)" style="
-              background: rgba(255, 255, 255, 0.1);
-              border: 1px solid rgba(255, 255, 255, 0.2);
-              color: rgba(255, 255, 255, 0.8);
-              padding: 12px 24px;
-              border-radius: 8px;
-              cursor: pointer;
-              font-size: 15px;
-              font-weight: 500;
-              transition: all 0.2s ease;
-            " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">退还</button>
-            `
-                : ''
-            }
-          </div>
-        `;
+                <div style="font-size: 54px; margin-bottom: 20px;">💸</div>
+                <div style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">收到转账</div>
+                <div style="font-size: 15px; opacity: 0.9; margin-bottom: 16px;">${message}</div>
+                <div style="font-size: 32px; font-weight: 700; margin-bottom: 24px; color: #ffeb3b; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">¥${amount}</div>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                  <button onclick="acceptTransfer('${messageId}', '${message}', '${amount}', this.parentElement.parentElement.parentElement)" style="
+                    background: rgba(255, 255, 255, 0.15);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    color: white;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 15px;
+                    font-weight: 500;
+                    transition: all 0.2s ease;
+                  " onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">接受</button>
+                  ${
+                    currentChatInfo.type === 'ai'
+                      ? `
+                  <button onclick="rejectTransfer('${messageId}', '${message}', '${amount}', this.parentElement.parentElement.parentElement)" style="
+                    background: rgba(255, 255, 255, 0.1);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    color: rgba(255, 255, 255, 0.8);
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 15px;
+                    font-weight: 500;
+                    transition: all 0.2s ease;
+                  " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">退还</button>
+                  `
+                      : ''
+                  }
+                </div>
+              `;
 
         overlay.appendChild(popup);
         document.body.appendChild(overlay);
@@ -4071,15 +4079,15 @@
         // 添加动画样式
         const style = document.createElement('style');
         style.textContent = `
-          @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-          }
-          @keyframes popIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-          }
-        `;
+                @keyframes fadeIn {
+                  from { opacity: 0; }
+                  to { opacity: 1; }
+                }
+                @keyframes popIn {
+                  from { transform: scale(0.8); opacity: 0; }
+                  to { transform: scale(1); opacity: 1; }
+                }
+              `;
         document.head.appendChild(style);
       }
 
@@ -4135,53 +4143,53 @@
       function showAcceptedTransfer(message, amount) {
         const overlay = document.createElement('div');
         overlay.style.cssText = `
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.7);
-          z-index: 1000;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          animation: fadeIn 0.3s ease;
-        `;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.3s ease;
+              `;
 
         const popup = document.createElement('div');
         popup.style.cssText = `
-          background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
-          border-radius: 16px;
-          padding: 40px 30px;
-          color: #666;
-          text-align: center;
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-          max-width: 320px;
-          animation: popIn 0.3s ease;
-        `;
+                background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+                border-radius: 16px;
+                padding: 40px 30px;
+                color: #666;
+                text-align: center;
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+                max-width: 320px;
+                animation: popIn 0.3s ease;
+              `;
 
         popup.innerHTML = `
-          <div style="font-size: 44px; margin-bottom: 20px; opacity: 0.6;">💸</div>
-          <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #999;">转账已接受</div>
-          <div style="font-size: 13px; margin-bottom: 12px; color: #aaa;">这笔转账已经被接受了</div>
-          <div style="font-size: 13px; opacity: 0.6; margin-bottom: 20px; color: #bbb; font-style: italic;">${message}</div>
-          <div style="background: rgba(0, 0, 0, 0.05); border-radius: 8px; padding: 8px 16px; margin-bottom: 24px; display: inline-block;">
-            <div style="font-size: 11px; color: #aaa; margin-bottom: 2px;">已接受金额</div>
-            <div style="font-size: 16px; font-weight: 600; color: #999;">¥${amount}</div>
-          </div>
-          <button onclick="this.parentElement.parentElement.remove()" style="
-            background: linear-gradient(135deg, #ddd 0%, #bbb 100%);
-            border: none;
-            color: #666;
-            padding: 10px 24px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          " onmouseover="this.style.background='linear-gradient(135deg, #ccc 0%, #aaa 100%)'" onmouseout="this.style.background='linear-gradient(135deg, #ddd 0%, #bbb 100%)'">知道了</button>
-        `;
+                <div style="font-size: 44px; margin-bottom: 20px; opacity: 0.6;">💸</div>
+                <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #999;">转账已接受</div>
+                <div style="font-size: 13px; margin-bottom: 12px; color: #aaa;">这笔转账已经被接受了</div>
+                <div style="font-size: 13px; opacity: 0.6; margin-bottom: 20px; color: #bbb; font-style: italic;">${message}</div>
+                <div style="background: rgba(0, 0, 0, 0.05); border-radius: 8px; padding: 8px 16px; margin-bottom: 24px; display: inline-block;">
+                  <div style="font-size: 11px; color: #aaa; margin-bottom: 2px;">已接受金额</div>
+                  <div style="font-size: 16px; font-weight: 600; color: #999;">¥${amount}</div>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" style="
+                  background: linear-gradient(135deg, #ddd 0%, #bbb 100%);
+                  border: none;
+                  color: #666;
+                  padding: 10px 24px;
+                  border-radius: 20px;
+                  cursor: pointer;
+                  font-size: 14px;
+                  font-weight: 500;
+                  transition: all 0.2s ease;
+                  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                " onmouseover="this.style.background='linear-gradient(135deg, #ccc 0%, #aaa 100%)'" onmouseout="this.style.background='linear-gradient(135deg, #ddd 0%, #bbb 100%)'">知道了</button>
+              `;
 
         overlay.appendChild(popup);
         document.body.appendChild(overlay);
@@ -4232,15 +4240,15 @@
             const acceptedMark = document.createElement('div');
             acceptedMark.className = 'accepted-mark';
             acceptedMark.style.cssText = `
-              font-size: 9px;
-              color: #bbb;
-              margin-top: 3px;
-              background: rgba(0, 0, 0, 0.05);
-              padding: 1px 6px;
-              border-radius: 8px;
-              display: inline-block;
-              font-weight: 400;
-            `;
+                    font-size: 9px;
+                    color: #bbb;
+                    margin-top: 3px;
+                    background: rgba(0, 0, 0, 0.05);
+                    padding: 1px 6px;
+                    border-radius: 8px;
+                    display: inline-block;
+                    font-weight: 400;
+                  `;
             acceptedMark.textContent = '已接受';
             transferInfo.appendChild(acceptedMark);
           }
@@ -4251,20 +4259,20 @@
       function showTransferAcceptedNotification(amount) {
         const notification = document.createElement('div');
         notification.style.cssText = `
-          position: fixed;
-          top: 20px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-          color: white;
-          padding: 12px 24px;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 500;
-          z-index: 1001;
-          box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-          animation: slideDown 0.3s ease;
-        `;
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                z-index: 1001;
+                box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+                animation: slideDown 0.3s ease;
+              `;
         notification.textContent = `已接受 ¥${amount} 转账`;
         document.body.appendChild(notification);
 
@@ -4278,20 +4286,20 @@
       function showTransferRejectedNotification(amount) {
         const notification = document.createElement('div');
         notification.style.cssText = `
-          position: fixed;
-          top: 20px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-          color: white;
-          padding: 12px 24px;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 500;
-          z-index: 1001;
-          box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
-          animation: slideDown 0.3s ease;
-        `;
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                z-index: 1001;
+                box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+                animation: slideDown 0.3s ease;
+              `;
         notification.textContent = `已退还 ¥${amount} 转账`;
         document.body.appendChild(notification);
 
@@ -4312,16 +4320,16 @@
         typingDiv.id = 'typingIndicator';
         typingDiv.className = 'message received';
         typingDiv.innerHTML = `
-          <div class="message-avatar">${currentSettings.aiAvatar}</div>
-          <div class="typing-indicator">
-            <span>正在输入</span>
-            <div class="typing-dots">
-              <div class="typing-dot"></div>
-              <div class="typing-dot"></div>
-              <div class="typing-dot"></div>
-            </div>
-          </div>
-        `;
+                <div class="message-avatar">${currentSettings.aiAvatar}</div>
+                <div class="typing-indicator">
+                  <span>正在输入</span>
+                  <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                  </div>
+                </div>
+              `;
 
         messagesArea.appendChild(typingDiv);
         messagesArea.scrollTop = messagesArea.scrollHeight;
@@ -4664,25 +4672,25 @@
           const emojiList = emojis.map(emoji => `"[表情包:${emoji.src}]"`).join(', ');
           systemPrompt += `
 
-表情包使用说明：
-用户上传了以下表情包，你可以在回复中使用它们：
-${emojiList}
+      表情包使用说明：
+      用户上传了以下表情包，你可以在回复中使用它们：
+      ${emojiList}
 
-使用表情包的格式为：[表情包:图片链接]
-你可以根据对话内容选择合适的表情包来回复，让对话更生动有趣。`;
+      使用表情包的格式为：[表情包:图片链接]
+      你可以根据对话内容选择合适的表情包来回复，让对话更生动有趣。`;
         }
 
         // 更明确的JSON格式指令
         systemPrompt += `
 
-重要：你必须严格按照JSON数组格式回复，不要添加任何解释文字。
-直接返回一个包含2-3条消息的JSON数组，格式如下：
-["第一条回复", "第二条回复"]
+      重要：你必须严格按照JSON数组格式回复，不要添加任何解释文字。
+      直接返回一个包含2-3条消息的JSON数组，格式如下：
+      ["第一条回复", "第二条回复"]
 
-示例：
-["你好！😊", "今天过得怎么样？"]
+      示例：
+      ["你好！😊", "今天过得怎么样？"]
 
-注意：只返回JSON数组，不要添加任何其他文字或标记。`;
+      注意：只返回JSON数组，不要添加任何其他文字或标记。`;
 
         return systemPrompt;
       }
@@ -4907,8 +4915,6 @@ ${emojiList}
       // 保存设置（按聊天ID分别保存）
       function saveSettings() {
         try {
-          
-
           const getVal = (id, fallback = '') => {
             const el = document.getElementById(id);
             return (el && el.value.trim()) || fallback;
@@ -4950,7 +4956,6 @@ ${emojiList}
           // 按聊天ID分别保存设置
           const settingsKey = `chatSettings_${currentChatInfo.id}`;
           localStorage.setItem(settingsKey, JSON.stringify(currentSettings));
-          
 
           // 强制更新显示
           updateAvatarDisplay('user', currentSettings.userAvatar, currentSettings.userAvatarFile);
@@ -4973,7 +4978,6 @@ ${emojiList}
           const panel = document.getElementById('settingsPanel');
           if (panel) panel.classList.remove('visible');
           showToast('设置已保存');
-          
         } catch (error) {
           console.error('保存设置时出错:', error);
           showToast('保存设置失败: ' + error.message);
@@ -5035,78 +5039,88 @@ ${emojiList}
         try {
           const chatKey = `chatHistory_${currentChatInfo.id}`;
           const dataToSave = JSON.stringify(messages);
-
-          // 检查数据大小，防止保存过大的数据
-          if (dataToSave.length > 5000000) {
-            // 5MB限制
-            console.warn('聊天记录过大，进行清理:', dataToSave.length, '字符');
-            // 只保留最近的100条消息
-            const recentMessages = messages.slice(-100);
-            localStorage.setItem(chatKey, JSON.stringify(recentMessages));
-            // 更新内存中的消息数组
-            messages.splice(0, messages.length - 100);
-            showToast('聊天记录过多，已自动清理旧消息');
-          } else {
-            localStorage.setItem(chatKey, dataToSave);
-          }
-
-          // 同时更新QQ界面的最后消息
-          updateQQLastMessage();
-        } catch (e) {
-          console.error('保存聊天记录失败:', e);
-          // 如果保存失败，尝试清理后再保存
-          if (messages.length > 50) {
-            const recentMessages = messages.slice(-50);
+          try {
+            const getVal = (id, fallback = '') => {
+              const el = document.getElementById(id);
+              return (el && el.value.trim()) || fallback;
+            };
+            // 检查必要的DOM元素是否存在
+            if (!document.getElementById('userName')) {
+              console.error('设置表单元素未找到');
+              showToast('设置表单未正确加载，请刷新页面重试');
+              return;
+            }
+            currentSettings.userName = getVal('userName', '用户');
+            currentSettings.userAge = getVal('userAge', '');
+            currentSettings.userHobby = getVal('userHobby', '');
+            currentSettings.userPersonality = getVal('userPersonality', '');
+            currentSettings.userBackground = getVal('userBackground', '');
+            currentSettings.aiName = getVal('aiName', 'AI助手');
+            currentSettings.aiAge = getVal('aiAge', '');
+            currentSettings.aiHobby = getVal('aiHobby', '');
+            currentSettings.aiPersonality = getVal('aiPersonality', '你是一个友善、专业的AI助手。');
+            currentSettings.aiBackground = getVal('aiBackground', '');
+            // 如果没有上传头像文件，则根据名称生成字母头像
+            if (!currentSettings.userAvatarFile) {
+              currentSettings.userAvatar = currentSettings.userName ? currentSettings.userName.charAt(0) : '用';
+            }
+            if (!currentSettings.aiAvatarFile) {
+              currentSettings.aiAvatar = currentSettings.aiName ? currentSettings.aiName.charAt(0) : 'AI';
+            }
+            const autoSaveEl = document.getElementById('autoSave');
+            if (autoSaveEl) currentSettings.autoSave = autoSaveEl.checked;
+            const soundEl = document.getElementById('soundEnabled');
+            if (soundEl) currentSettings.soundEnabled = soundEl.checked;
+            const worldBookEl = document.getElementById('worldBookEnabled');
+            if (worldBookEl) currentSettings.worldBookEnabled = worldBookEl.checked;
+            // 限制头像base64等大字段
+            let tempSettings = JSON.parse(JSON.stringify(currentSettings));
+            if (tempSettings.userAvatarFile && tempSettings.userAvatarFile.length > 100000) {
+              tempSettings.userAvatarFile = '';
+              showToast('用户头像过大，未保存头像图片');
+            }
+            if (tempSettings.aiAvatarFile && tempSettings.aiAvatarFile.length > 100000) {
+              tempSettings.aiAvatarFile = '';
+              showToast('AI头像过大，未保存头像图片');
+            }
+            // 按聊天ID分别保存设置
+            const settingsKey = `chatSettings_${currentChatInfo.id}`;
             try {
-              localStorage.setItem(`chatHistory_${currentChatInfo.id}`, JSON.stringify(recentMessages));
-              messages.splice(0, messages.length - 50);
-              showToast('存储空间不足，已清理部分聊天记录');
-            } catch (e2) {
-              console.error('清理后仍无法保存:', e2);
-              showToast('存储空间不足，无法保存聊天记录');
+              localStorage.setItem(settingsKey, JSON.stringify(tempSettings));
+            } catch (e) {
+              // 再次降级，移除所有头像字段
+              tempSettings.userAvatarFile = '';
+              tempSettings.aiAvatarFile = '';
+              try {
+                localStorage.setItem(settingsKey, JSON.stringify(tempSettings));
+                showToast('设置过大，已自动去除头像图片后保存');
+              } catch (e2) {
+                showToast('设置保存失败，数据过大或存储空间不足');
+                return;
+              }
             }
-          }
-        }
-      }
-
-      // 更新QQ界面的最后消息
-      function updateQQLastMessage() {
-        if (messages.length > 0) {
-          const lastMessage = messages[messages.length - 1];
-          const qqChatData = JSON.parse(localStorage.getItem('qqChatData') || '[]');
-
-          const chatIndex = qqChatData.findIndex(chat => chat.id === currentChatInfo.id);
-          if (chatIndex !== -1) {
-            // 处理不同类型的消息
-            let messageText = '';
-            if (lastMessage.type === 'image') {
-              messageText = '[图片]';
-            } else if (lastMessage.text) {
-              messageText = lastMessage.text.length > 20 ? lastMessage.text.substring(0, 20) + '...' : lastMessage.text;
-            } else {
-              messageText = '[消息]';
+            // 强制更新显示
+            updateAvatarDisplay('user', tempSettings.userAvatar, tempSettings.userAvatarFile);
+            updateAvatarDisplay('ai', tempSettings.aiAvatar, tempSettings.aiAvatarFile);
+            // 立即同步到聊天信息并更新UI
+            if (currentChatInfo.type === 'ai') {
+              currentChatInfo.name = tempSettings.aiName;
+              if (tempSettings.aiAvatarFile) {
+                currentChatInfo.avatarFile = tempSettings.aiAvatarFile;
+                currentChatInfo.avatar = '';
+              } else {
+                currentChatInfo.avatar = tempSettings.aiAvatar;
+                currentChatInfo.avatarFile = '';
+              }
             }
-
-            qqChatData[chatIndex].lastMessage = messageText;
-            qqChatData[chatIndex].time = '刚刚';
-            qqChatData[chatIndex].unread = 0; // 清除未读计数
-
-            localStorage.setItem('qqChatData', JSON.stringify(qqChatData));
+            updateUI();
+            const panel = document.getElementById('settingsPanel');
+            if (panel) panel.classList.remove('visible');
+            showToast('设置已保存');
+          } catch (error) {
+            console.error('保存设置时出错:', error);
+            showToast('保存设置失败: ' + error.message);
           }
-        }
-      }
-
-      // 加载聊天记录
-      function loadChatHistory() {
-        const chatKey = `chatHistory_${currentChatInfo.id}`;
-        const saved = localStorage.getItem(chatKey);
-        if (saved) {
-          const savedMessages = JSON.parse(saved);
-          // 清空现有消息
-          messages = [];
-          const messagesArea = document.getElementById('messagesArea');
-          messagesArea.innerHTML = '';
-
           // 重新添加所有消息
           savedMessages.forEach(msg => {
             addMessageToUI(msg);
@@ -5121,6 +5135,8 @@ ${emojiList}
                 : '开始与 ' + currentChatInfo.name + ' 的对话吧！';
             addMessage(currentChatInfo.type === 'ai' ? 'ai' : 'system', welcomeMsg);
           }
+        } catch (e) {
+          console.error('加载聊天记录失败:', e);
         }
       }
 
@@ -5162,14 +5178,14 @@ ${emojiList}
             const amount = redPacketMatch[2].trim();
 
             messageContent = `
-              <div class="redpacket-content" data-amount="${amount}">
-                <span class="redpacket-icon">🧧</span>
-                <div class="redpacket-info">
-                  <div class="redpacket-title">QQ红包</div>
-                  <div class="redpacket-bless">${bless}</div>
-                </div>
-              </div>
-            `;
+                    <div class="redpacket-content" data-amount="${amount}">
+                      <span class="redpacket-icon">🧧</span>
+                      <div class="redpacket-info">
+                        <div class="redpacket-title">QQ红包</div>
+                        <div class="redpacket-bless">${bless}</div>
+                      </div>
+                    </div>
+                  `;
           } else {
             messageContent = escapeHtml(messageText);
           }
@@ -5184,17 +5200,17 @@ ${emojiList}
             const isAccepted = messageText.includes('已接受转账');
 
             messageContent = `
-              <div class="transfer-content" data-amount="${amount}" data-message="${msg}" ${
+                    <div class="transfer-content" data-amount="${amount}" data-message="${msg}" ${
               isAccepted ? 'data-accepted="true"' : ''
             }>
-                <span class="transfer-icon">💸</span>
-                <div class="transfer-info">
-                  <div class="transfer-title">转账</div>
-                  <div class="transfer-amount">¥${amount}</div>
-                  <div class="transfer-message-text">${msg}</div>
-                </div>
-              </div>
-            `;
+                      <span class="transfer-icon">💸</span>
+                      <div class="transfer-info">
+                        <div class="transfer-title">转账</div>
+                        <div class="transfer-amount">¥${amount}</div>
+                        <div class="transfer-message-text">${msg}</div>
+                      </div>
+                    </div>
+                  `;
           } else {
             messageContent = escapeHtml(messageText);
           }
@@ -5219,16 +5235,16 @@ ${emojiList}
         messageDiv.className = `message ${isUser ? 'sent' : 'received'}`;
         messageDiv.setAttribute('data-message-id', `history_${message.id || Date.now()}`);
         messageDiv.innerHTML = `
-          <div class="message-avatar">${avatarHTML}</div>
-          <div>
-            <div class="message-bubble ${isRedPacket ? 'redpacket-message' : ''} ${
+                <div class="message-avatar">${avatarHTML}</div>
+                <div>
+                  <div class="message-bubble ${isRedPacket ? 'redpacket-message' : ''} ${
           isTransfer ? 'transfer-message' : ''
         } ${isEmoji ? 'emoji-message' : ''}" ${
           isRedPacket ? `onclick="openRedPacket('history_${message.id || Date.now()}')"` : ''
         } ${isTransfer ? `onclick="openTransfer('history_${message.id || Date.now()}')"` : ''}>${messageContent}</div>
-            <div class="message-time">${formatTime(new Date(message.timestamp))}</div>
-          </div>
-        `;
+                  <div class="message-time">${formatTime(new Date(message.timestamp))}</div>
+                </div>
+              `;
 
         messagesArea.appendChild(messageDiv);
         messagesArea.scrollTop = messagesArea.scrollHeight;
@@ -5283,11 +5299,6 @@ ${emojiList}
       function updateUI() {
         // 如果是AI聊天，同步AI设置到聊天信息
         if (currentChatInfo.type === 'ai') {
-          //console.log('updateUI - 当前currentChatInfo头像状态:', {
-            avatarFile: currentChatInfo.avatarFile,
-            avatar: currentChatInfo.avatar,
-          });
-
           // 强制重新从localStorage读取最新设置
           const saved = localStorage.getItem('chatSettings');
           if (saved) {
@@ -5318,13 +5329,6 @@ ${emojiList}
                 currentSettings.aiAvatar = latestSettings.aiAvatar || 'AI';
               }
             }
-
-            //console.log('updateUI - 最终头像状态:', {
-              'currentChatInfo.avatarFile': currentChatInfo.avatarFile,
-              'currentChatInfo.avatar': currentChatInfo.avatar,
-              'currentSettings.aiAvatarFile': currentSettings.aiAvatarFile,
-              'currentSettings.aiAvatar': currentSettings.aiAvatar,
-            });
           }
         }
 
@@ -5382,4 +5386,3 @@ ${emojiList}
     </script>
   </body>
 </html>
-
