@@ -1827,8 +1827,8 @@
         userName: '用户',
         userAge: '',
         userHobby: '',
-        userPersonality: '',
-        userBackground: '',
+        userPersonality: '你是一个友善、专业的AI助手，善于理解用户需求并提供有用的帮助。',
+        userBackground: '我是一个AI助手，拥有广泛的知识背景，包括科学、技术、文学、艺术等多个领域。',
         userAvatar: '用',
         userAvatarFile: null, // 用户头像文件
         aiName: 'AI助手',
@@ -3234,7 +3234,7 @@
 
       // 生成AI回复
       async function generateAIReply(userMessage) {
-        // 先强制清理任何现有的输入指示器
+        // 先强制清理任何残留的输入指示器
         forceCleanTypingIndicator();
 
         // 显示AI正在输入
@@ -3508,18 +3508,18 @@
           const transferMatch = text.match(/💸\s*(?:向你转账|已接受转账|退还转账)\s*(\d+\.?\d*)元(?:\s*-\s*(.+))?/);
           if (transferMatch) {
             const amount = transferMatch[1].trim();
-            const message = transferMatch[2] ? transferMatch[2].trim() : '转账';
+            const msg = transferMatch[2] ? transferMatch[2].trim() : '转账';
             const isAccepted = text.includes('已接受转账');
 
             messageContent = `
-                    <div class="transfer-content" data-amount="${amount}" data-message="${message}" ${
+                    <div class="transfer-content" data-amount="${amount}" data-message="${msg}" ${
               isAccepted ? 'data-accepted="true"' : ''
             }>
                       <span class="transfer-icon">💸</span>
                       <div class="transfer-info">
                         <div class="transfer-title">转账</div>
                         <div class="transfer-amount">¥${amount}</div>
-                        <div class="transfer-message-text">${message}</div>
+                        <div class="transfer-message-text">${msg}</div>
                       </div>
                     </div>
                   `;
@@ -3631,6 +3631,7 @@
             if (transferMatch) {
               const amount = transferMatch[1].trim();
               const message = transferMatch[2] ? transferMatch[2].trim() : '转账';
+              const isAccepted = text.includes('已接受转账');
 
               // AI自动回复收到转账
               const aiReplies = [
@@ -3814,7 +3815,7 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                animation: fadeIn 0.3s ease;
+                padding: 10px;
               `;
 
         const popup = document.createElement('div');
@@ -3851,7 +3852,7 @@
         document.body.appendChild(overlay); // 点击遮罩关闭
         overlay.onclick = e => {
           if (e.target === overlay) {
-            overlay.remove();
+            closeEmojiManager();
           }
         };
 
@@ -4255,1096 +4256,67 @@
         }
       }
 
-      // 显示转账接受成功通知
-      function showTransferAcceptedNotification(amount) {
-        const notification = document.createElement('div');
-        notification.style.cssText = `
+      // 显示已接受的转账弹窗
+      function showAcceptedTransfer(message, amount) {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
                 position: fixed;
-                top: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-                color: white;
-                padding: 12px 24px;
-                border-radius: 8px;
-                font-size: 14px;
-                font-weight: 500;
-                z-index: 1001;
-                box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-                animation: slideDown 0.3s ease;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.3s ease;
               `;
-        notification.textContent = `已接受 ¥${amount} 转账`;
-        document.body.appendChild(notification);
 
-        setTimeout(() => {
-          notification.style.animation = 'slideUp 0.3s ease';
-          setTimeout(() => notification.remove(), 300);
-        }, 2000);
-      }
-
-      // 显示转账退还通知
-      function showTransferRejectedNotification(amount) {
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-                color: white;
-                padding: 12px 24px;
-                border-radius: 8px;
-                font-size: 14px;
-                font-weight: 500;
-                z-index: 1001;
-                box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
-                animation: slideDown 0.3s ease;
+        const popup = document.createElement('div');
+        popup.style.cssText = `
+                background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+                border-radius: 16px;
+                padding: 40px 30px;
+                color: #666;
+                text-align: center;
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+                max-width: 320px;
+                animation: popIn 0.3s ease;
               `;
-        notification.textContent = `已退还 ¥${amount} 转账`;
-        document.body.appendChild(notification);
 
-        setTimeout(() => {
-          notification.style.animation = 'slideUp 0.3s ease';
-          setTimeout(() => notification.remove(), 300);
-        }, 2000);
-      }
-
-      // 显示AI正在输入指示器
-      function showTypingIndicator() {
-        // 先清除任何现有的指示器
-        hideTypingIndicator();
-
-        isAITyping = true;
-        const messagesArea = document.getElementById('messagesArea');
-        const typingDiv = document.createElement('div');
-        typingDiv.id = 'typingIndicator';
-        typingDiv.className = 'message received';
-        typingDiv.innerHTML = `
-                <div class="message-avatar">${currentSettings.aiAvatar}</div>
-                <div class="typing-indicator">
-                  <span>正在输入</span>
-                  <div class="typing-dots">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                  </div>
+        popup.innerHTML = `
+                <div style="font-size: 44px; margin-bottom: 20px; opacity: 0.6;">💸</div>
+                <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #999;">转账已接受</div>
+                <div style="font-size: 13px; margin-bottom: 12px; color: #aaa;">这笔转账已经被接受了</div>
+                <div style="font-size: 13px; opacity: 0.6; margin-bottom: 20px; color: #bbb; font-style: italic;">${message}</div>
+                <div style="background: rgba(0, 0, 0, 0.05); border-radius: 8px; padding: 8px 16px; margin-bottom: 24px; display: inline-block;">
+                  <div style="font-size: 11px; color: #aaa; margin-bottom: 2px;">已接受金额</div>
+                  <div style="font-size: 16px; font-weight: 600; color: #999;">¥${amount}</div>
                 </div>
+                <button onclick="this.parentElement.parentElement.remove()" style="
+                  background: linear-gradient(135deg, #ddd 0%, #bbb 100%);
+                  border: none;
+                  color: #666;
+                  padding: 10px 24px;
+                  border-radius: 20px;
+                  cursor: pointer;
+                  font-size: 14px;
+                  font-weight: 500;
+                  transition: all 0.2s ease;
+                  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                " onmouseover="this.style.background='linear-gradient(135deg, #ccc 0%, #aaa 100%)'" onmouseout="this.style.background='linear-gradient(135deg, #ddd 0%, #bbb 100%)'">知道了</button>
               `;
 
-        messagesArea.appendChild(typingDiv);
-        messagesArea.scrollTop = messagesArea.scrollHeight;
-      }
+        overlay.appendChild(popup);
+        document.body.appendChild(overlay);
 
-      // 隐藏输入指示器
-      function hideTypingIndicator() {
-        isAITyping = false;
-        const indicator = document.getElementById('typingIndicator');
-        if (indicator) {
-          indicator.remove();
-        }
-
-        // 更新发送按钮状态
-        const sendBtn = document.getElementById('sendBtn');
-        const messageInput = document.getElementById('messageInput');
-        if (sendBtn && messageInput) {
-          sendBtn.disabled = !messageInput.value.trim();
-        }
-      }
-
-      // 强制清理所有输入指示器
-      function forceCleanTypingIndicator() {
-        isAITyping = false;
-        // 查找所有可能的输入指示器并删除
-        const indicators = document.querySelectorAll('#typingIndicator, .typing-indicator-message');
-        indicators.forEach(indicator => {
-          indicator.remove();
-        });
-
-        // 更新发送按钮状态
-        const sendBtn = document.getElementById('sendBtn');
-        const messageInput = document.getElementById('messageInput');
-        if (sendBtn && messageInput) {
-          sendBtn.disabled = !messageInput.value.trim();
-        }
-      }
-
-      // 获取AI回复（真实API调用）
-      async function getAIResponse(userMessage) {
-        // 动态获取相关的世界书条目
-        try {
-          if (typeof window.getWorldBookEntriesForCharacter === 'function') {
-            // 提取用户消息中的关键词（简单的词汇提取）
-            const keywords = userMessage
-              .replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, '') // 移除标点符号
-              .split(/\s+/)
-              .filter(word => word.length > 1); // 过滤太短的词
-
-            // 获取相关的世界书条目用于上下文增强
-            const relevantEntries = window.getWorldBookEntriesForCharacter('', keywords);
-            if (relevantEntries && Array.isArray(relevantEntries) && relevantEntries.length > 0) {
-              // 这些条目已经在generateSystemPrompt中被包含了
-            }
+        // 点击遮罩关闭
+        overlay.onclick = e => {
+          if (e.target === overlay) {
+            overlay.remove();
           }
-        } catch (error) {}
-
-        // 从localStorage获取API设置
-        const apiSettings = JSON.parse(localStorage.getItem('apiSettings') || '{}');
-
-        if (!apiSettings.selectedService || !apiSettings[apiSettings.selectedService]?.key) {
-          return '请先在API设置中配置您的AI服务和API密钥。点击设置 → API配置 → 前往API设置进行配置。';
-        }
-
-        try {
-          let response;
-          const serviceConfig = apiSettings[apiSettings.selectedService];
-
-          if (apiSettings.selectedService === 'openai') {
-            response = await callOpenAI(userMessage, serviceConfig);
-          } else if (apiSettings.selectedService === 'gemini') {
-            response = await callGemini(userMessage, serviceConfig);
-          } else {
-            throw new Error('不支持的AI服务');
-          }
-
-          return response;
-        } catch (error) {
-          console.error('AI API调用失败:', error);
-          return `AI服务暂时不可用：${error.message}。请检查API设置或稍后重试。`;
-        }
-      }
-
-      // 检查特殊红包回复
-      function checkSpecialRedPacketReply(userMessage) {
-        const message = userMessage.toLowerCase();
-
-        // 当用户要红包时，AI有概率发红包
-        if (
-          message.includes('红包') ||
-          message.includes('发红包') ||
-          message.includes('给红包') ||
-          message.includes('要红包')
-        ) {
-          const random = Math.random();
-
-          if (random < 0.4) {
-            // 40%概率发红包
-            const amounts = ['1.88', '2.88', '5.20', '8.88', '6.66', '9.99', '13.14', '18.88'];
-            const blessings = [
-              '恭喜发财，大吉大利！',
-              '财源广进，好运连连！',
-              '步步高升，福气满满！',
-              '笑口常开，心想事成！',
-              '万事如意，红红火火！',
-            ];
-
-            // 添加防护性检查
-            if (!amounts || amounts.length === 0 || !blessings || blessings.length === 0) {
-              console.error('红包数组未正确初始化');
-              return '抱歉，红包功能暂时不可用。';
-            }
-
-            const amount = amounts[Math.floor(Math.random() * amounts.length)];
-            const blessing = blessings[Math.floor(Math.random() * blessings.length)];
-
-            // 更自然的回复
-            const beforeReplies = [
-              '哈哈，好的好的！',
-              '来了来了！',
-              '等着，马上给你发一个~',
-              '好嘛，给你准备个小红包！',
-              '这就来！',
-            ];
-
-            const result = [
-              beforeReplies[Math.floor(Math.random() * beforeReplies.length)],
-              `🧧 ${blessing}|${amount}`,
-            ];
-
-            return result;
-          } else {
-            // 60%概率拒绝或调皮回复
-            const refuseReplies = [
-              ['哎呀', '今天红包额度用完啦 �'],
-              ['emmm...', '钱包空空如也呢 🤭'],
-              ['想要红包呀？', '那你得先夸夸我！�'],
-              ['红包嘛...', '下次一定下次一定！'],
-              ['哈哈哈', '虚拟红包给你比个心 ❤️'],
-              ['我这个AI啊', '只有虚拟的爱给你 💕'],
-            ];
-            const result = refuseReplies[Math.floor(Math.random() * refuseReplies.length)];
-
-            return result;
-          }
-        }
-
-        // 检查转账相关回复（包括转账卡片格式）
-        if (
-          message.includes('转账') ||
-          message.includes('给你转') ||
-          message.includes('转点钱') ||
-          message.includes('💸') ||
-          message.includes('向你转账')
-        ) {
-          const responses = [
-            ['哇！', '谢谢你要给我转账！💸', '不过我是AI收不到真钱呢 😊'],
-            ['转账给我？', '心意我收到了～', '虽然钱到不了我这里 �'],
-            ['emmm', '虚拟转账我就笑纳了！', '真钱你还是留着吧 💕'],
-            ['好感动！', '不过我这个AI', '只能收到你的爱意 ❤️'],
-            ['哈哈', '转账卡片很漂亮！', '可惜我没有银行账户 🏦'],
-          ];
-          const result = responses[Math.floor(Math.random() * responses.length)];
-
-          return result;
-        }
-
-        // 检查一些普通消息的多条回复
-        if (message.includes('你好') || message.includes('hi') || message.includes('hello')) {
-          const greetings = [
-            ['你好呀！', '今天心情怎么样？😊'],
-            ['Hi～', '很高兴见到你！✨'],
-            ['哈喽！', '又来找我聊天啦～'],
-            ['你好你好！', '今天有什么有趣的事吗？'],
-            ['嗨！', '欢迎来到我的聊天室！🎉'],
-          ];
-          const result = greetings[Math.floor(Math.random() * greetings.length)];
-
-          return result;
-        }
-
-        if (message.includes('怎么样') || message.includes('如何') || message.includes('好吗')) {
-          const responses = [
-            ['我很好呀！', '每天都很开心 😄'],
-            ['还不错还不错', '和你聊天更开心了！'],
-            ['挺好的！', '你呢？最近忙什么？'],
-            ['状态满满！', '作为AI每天都充满电⚡'],
-            ['嗯嗯，挺好的', '谢谢关心～❤️'],
-          ];
-          const result = responses[Math.floor(Math.random() * responses.length)];
-
-          return result;
-        }
-
-        // 添加更多日常对话
-        if (message.includes('在吗') || message.includes('在不在')) {
-          return ['在的在的！', '随时为你服务～'];
-        }
-
-        if (message.includes('拜拜') || message.includes('再见') || message.includes('88')) {
-          return ['拜拜～', '下次再聊哦！👋'];
-        }
-
-        if (message.includes('谢谢') || message.includes('感谢')) {
-          return ['不客气！', '能帮到你就好～😊'];
-        }
-
-        // 如果没有特殊回复，有小概率返回多条聊天式回复
-        const randomChat = Math.random();
-        if (randomChat < 0.15) {
-          // 15%概率随机聊天
-          const randomReplies = [
-            ['好的', '对了，你今天心情怎么样？'],
-            ['嗯嗯', '最近有什么有趣的事吗？'],
-            ['收到', '话说你平时都喜欢做什么？'],
-            ['明白了', '顺便问一下，你喜欢什么类型的音乐？'],
-            ['好', '你有什么特别的爱好吗？'],
-            ['嗯', '今天天气不错呢，你在忙什么？'],
-          ];
-          const result = randomReplies[Math.floor(Math.random() * randomReplies.length)];
-
-          return result;
-        }
-
-        return null; // 没有特殊回复
-      }
-
-      // 生成系统提示词
-      function generateSystemPrompt() {
-        let systemPrompt = '';
-
-        // AI基础设定
-        const basePersonality =
-          currentSettings.aiPersonality || '你是一个友善、专业的AI助手，善于理解用户需求并提供有用的帮助。';
-        systemPrompt += basePersonality;
-
-        // AI详细信息
-        if (currentSettings.aiName && currentSettings.aiName !== 'AI助手') {
-          systemPrompt += `\n\n你的名字是${currentSettings.aiName}。`;
-        }
-
-        if (currentSettings.aiAge) {
-          systemPrompt += `\n你的年龄是${currentSettings.aiAge}岁。`;
-        }
-
-        if (currentSettings.aiHobby) {
-          systemPrompt += `\n你的爱好是：${currentSettings.aiHobby}。`;
-        }
-
-        if (currentSettings.aiBackground) {
-          systemPrompt += `\n\n关于你的背景：${currentSettings.aiBackground}`;
-        }
-
-        // 集成世界书条目
-        try {
-          if (
-            currentSettings.worldBookEnabled !== false &&
-            typeof window.getWorldBookEntriesForCharacter === 'function'
-          ) {
-            // 获取AI专用和全局的世界书条目
-            const aiEntries = window.getWorldBookEntriesForCharacter('ai') || [];
-            const globalEntries = window.getWorldBookEntriesForCharacter('') || [];
-
-            // 合并条目并去重
-            const allEntries = [...aiEntries, ...globalEntries].filter(
-              (entry, index, self) => entry && index === self.findIndex(e => e && e.id === entry.id),
-            );
-
-            if (allEntries && allEntries.length > 0) {
-              systemPrompt += `\n\n=== 世界设定 ===`;
-              allEntries.forEach(entry => {
-                systemPrompt += `\n\n【${entry.title}】`;
-                if (entry.keywords.length > 0) {
-                  systemPrompt += `\n关键词：${entry.keywords.join(', ')}`;
-                }
-                systemPrompt += `\n${entry.content}`;
-              });
-              systemPrompt += `\n\n请根据以上世界设定信息进行角色扮演和对话，确保回复符合设定的世界观。`;
-            }
-          }
-        } catch (error) {}
-
-        // 用户信息
-        let userInfo = '';
-        if (currentSettings.userName && currentSettings.userName !== '用户') {
-          userInfo += `用户的名字是${currentSettings.userName}`;
-        }
-
-        if (currentSettings.userAge) {
-          userInfo += (userInfo ? '，' : '用户') + `年龄是${currentSettings.userAge}岁`;
-        }
-
-        if (currentSettings.userHobby) {
-          userInfo += (userInfo ? '，' : '用户') + `爱好是${currentSettings.userHobby}`;
-        }
-
-        if (userInfo) {
-          systemPrompt += `\n\n关于用户：${userInfo}。`;
-        }
-
-        // 添加用户性格和背景信息
-        if (currentSettings.userPersonality) {
-          systemPrompt += `\n用户的性格特点：${currentSettings.userPersonality}`;
-        }
-
-        if (currentSettings.userBackground) {
-          systemPrompt += `\n用户的背景：${currentSettings.userBackground}`;
-        }
-
-        // 用户相关的世界书条目
-        try {
-          if (
-            currentSettings.worldBookEnabled !== false &&
-            typeof window.getWorldBookEntriesForCharacter === 'function'
-          ) {
-            const userEntries = window.getWorldBookEntriesForCharacter('user') || [];
-
-            if (userEntries && userEntries.length > 0) {
-              systemPrompt += `\n\n=== 用户相关设定 ===`;
-              userEntries.forEach(entry => {
-                if (entry && entry.title) {
-                  systemPrompt += `\n\n【${entry.title}】`;
-                  if (entry.keywords && Array.isArray(entry.keywords) && entry.keywords.length > 0) {
-                    systemPrompt += `\n关键词：${entry.keywords.join(', ')}`;
-                  }
-                  systemPrompt += `\n${entry.content}`;
-                }
-              });
-            }
-          }
-        } catch (error) {}
-
-        if (userInfo || currentSettings.userPersonality || currentSettings.userBackground) {
-          systemPrompt += `\n请根据这些用户信息进行更个性化的交流，适应用户的性格和背景。`;
-        }
-
-        // 获取用户的表情包
-        const emojis = JSON.parse(localStorage.getItem('customEmojis') || '[]');
-        if (emojis.length > 0) {
-          const emojiList = emojis.map(emoji => `"[表情包:${emoji.src}]"`).join(', ');
-          systemPrompt += `
-
-      表情包使用说明：
-      用户上传了以下表情包，你可以在回复中使用它们：
-      ${emojiList}
-
-      使用表情包的格式为：[表情包:图片链接]
-      你可以根据对话内容选择合适的表情包来回复，让对话更生动有趣。`;
-        }
-
-        // 更明确的JSON格式指令
-        systemPrompt += `
-
-      重要：你必须严格按照JSON数组格式回复，不要添加任何解释文字。
-      直接返回一个包含2-3条消息的JSON数组，格式如下：
-      ["第一条回复", "第二条回复"]
-
-      示例：
-      ["你好！😊", "今天过得怎么样？"]
-
-      注意：只返回JSON数组，不要添加任何其他文字或标记。`;
-
-        return systemPrompt;
-      }
-
-      // 调用OpenAI API
-      async function callOpenAI(userMessage, config) {
-        // 构造对话历史
-        const systemPrompt = generateSystemPrompt();
-        const chatHistory = [];
-        chatHistory.push({ role: 'system', content: systemPrompt });
-        messages.forEach(m => {
-          if (m.sender === 'user') chatHistory.push({ role: 'user', content: m.text });
-          else if (m.sender === 'ai') chatHistory.push({ role: 'assistant', content: m.text });
-        });
-        // 确保最后一条是当前用户请求
-        if (!messages.length || messages[messages.length - 1].sender !== 'user') {
-          chatHistory.push({ role: 'user', content: userMessage });
-        }
-
-        const body = {
-          model: config.model || 'gpt-3.5-turbo',
-          messages: chatHistory,
-          temperature: parseFloat(config.temperature || 0.7),
         };
-
-        // 只有当配置了 max_tokens 时才添加这个参数
-        if (config.max_tokens && parseInt(config.max_tokens) > 0) {
-          body.max_tokens = parseInt(config.max_tokens);
-        }
-
-        // 使用标准的 /v1/chat/completions 端点
-        const baseUrl = (config.url || 'https://api.openai.com').replace(/\/$/, '');
-        const endpoint = `${baseUrl}/v1/chat/completions`;
-
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${config.key}` },
-          body: JSON.stringify(body),
-        });
-
-        if (!response.ok) {
-          console.error('API请求失败:', response.status, response.statusText);
-          const errorText = await response.text().catch(() => '无法读取错误信息');
-          console.error('错误响应内容:', errorText);
-
-          let errorData = {};
-          try {
-            errorData = JSON.parse(errorText);
-          } catch (e) {
-            console.error('错误响应不是有效JSON:', errorText);
-          }
-
-          throw new Error(`OpenAI API错误 ${response.status}: ${errorData.error?.message || errorText || '未知错误'}`);
-        }
-
-        const data = await response.json();
-
-        const aiResponse = data.choices?.[0]?.message?.content || 'AI 没有返回内容。';
-
-        // 尝试解析多条消息格式 (JSON数组)
-
-        try {
-          // 清理可能的多余字符
-          let cleanResponse = aiResponse.trim();
-
-          // 如果回复包含```json标记，提取JSON部分
-          if (cleanResponse.includes('```json')) {
-            const jsonStart = cleanResponse.indexOf('```json') + 7;
-            const jsonEnd = cleanResponse.indexOf('```', jsonStart);
-            if (jsonEnd > jsonStart) {
-              cleanResponse = cleanResponse.substring(jsonStart, jsonEnd).trim();
-            }
-          }
-
-          // 如果回复以```开始但不是```json，也尝试提取
-          if (cleanResponse.startsWith('```') && !cleanResponse.startsWith('```json')) {
-            const jsonStart = cleanResponse.indexOf('\n') + 1;
-            const jsonEnd = cleanResponse.lastIndexOf('```');
-            if (jsonEnd > jsonStart) {
-              cleanResponse = cleanResponse.substring(jsonStart, jsonEnd).trim();
-            }
-          }
-
-          const parsedResponse = JSON.parse(cleanResponse);
-          if (Array.isArray(parsedResponse) && parsedResponse.length > 0) {
-            return parsedResponse;
-          } else {
-          }
-        } catch (e) {}
-
-        // 如果不是有效的JSON数组，返回原始回复
-        return aiResponse;
-      }
-
-      // 调用Google Gemini API
-      async function callGemini(userMessage, config) {
-        const systemPrompt = generateSystemPrompt();
-
-        const response = await fetch(
-          `${config.url || 'https://generativelanguage.googleapis.com/v1beta'}/models/${
-            config.model || 'gemini-pro'
-          }:generateContent?key=${config.key}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              contents: [
-                {
-                  parts: [
-                    {
-                      text: `${systemPrompt}\n\n用户消息: ${userMessage}`,
-                    },
-                  ],
-                },
-              ],
-              generationConfig: {
-                temperature: 0.7,
-                maxOutputTokens: 1000,
-              },
-            }),
-          },
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(`Gemini API错误 ${response.status}: ${errorData.error?.message || '未知错误'}`);
-        }
-
-        const data = await response.json();
-        const aiResponse = data.candidates[0].content.parts[0].text;
-
-        // 尝试解析多条消息格式 (JSON数组)
-
-        try {
-          // 清理可能的多余字符
-          let cleanResponse = aiResponse.trim();
-
-          // 如果回复包含```json标记，提取JSON部分
-          if (cleanResponse.includes('```json')) {
-            const jsonStart = cleanResponse.indexOf('```json') + 7;
-            const jsonEnd = cleanResponse.indexOf('```', jsonStart);
-            if (jsonEnd > jsonStart) {
-              cleanResponse = cleanResponse.substring(jsonStart, jsonEnd).trim();
-            }
-          }
-
-          // 如果回复以```开始但不是```json，也尝试提取
-          if (cleanResponse.startsWith('```') && !cleanResponse.startsWith('```json')) {
-            const jsonStart = cleanResponse.indexOf('\n') + 1;
-            const jsonEnd = cleanResponse.lastIndexOf('```');
-            if (jsonEnd > jsonStart) {
-              cleanResponse = cleanResponse.substring(jsonStart, jsonEnd).trim();
-            }
-          }
-
-          const parsedResponse = JSON.parse(cleanResponse);
-          if (Array.isArray(parsedResponse) && parsedResponse.length > 0) {
-            return parsedResponse;
-          } else {
-          }
-        } catch (e) {}
-
-        // 如果不是有效的JSON数组，返回原始回复
-        return aiResponse;
-      }
-
-      // 切换设置面板
-      function toggleSettings() {
-        const panel = document.getElementById('settingsPanel');
-        if (!panel) return;
-        const chatInfoPanel = document.getElementById('chatInfoPanel');
-
-        hideFunctionCard();
-        if (chatInfoPanel) chatInfoPanel.style.display = 'none';
-
-        const willShow = !panel.classList.contains('visible');
-        if (willShow) {
-          panel.classList.add('visible');
-          loadSettingsToForm();
-        } else {
-          panel.classList.remove('visible');
-        }
-      }
-
-      // 加载设置到表单
-      function loadSettingsToForm() {
-        const uName = document.getElementById('userName');
-        if (!uName) return; // 面板未渲染
-
-        // 重新加载当前聊天的设置
-        loadSettings();
-
-        // 正确的字段映射
-        const userNameEl = document.getElementById('userName');
-        const userAgeEl = document.getElementById('userAge');
-        const userHobbyEl = document.getElementById('userHobby');
-        const aiNameEl = document.getElementById('aiName');
-        const aiPersonalityEl = document.getElementById('aiPersonality');
-
-        if (userNameEl) userNameEl.value = currentSettings.userName || '';
-        if (userAgeEl) userAgeEl.value = currentSettings.userAge || '';
-        if (userHobbyEl) userHobbyEl.value = currentSettings.userHobby || '';
-        if (aiNameEl) aiNameEl.value = currentSettings.aiName || 'AI助手';
-        if (aiPersonalityEl) aiPersonalityEl.value = currentSettings.aiPersonality || '';
-
-        const autoSaveEl = document.getElementById('autoSave');
-        if (autoSaveEl) autoSaveEl.checked = !!currentSettings.autoSave;
-        const soundEl = document.getElementById('soundEnabled');
-        if (soundEl) soundEl.checked = !!currentSettings.soundEnabled;
-        const worldBookEl = document.getElementById('worldBookEnabled');
-        if (worldBookEl) worldBookEl.checked = currentSettings.worldBookEnabled !== false; // 默认开启
-
-        // 更新头像预览
-        updateAvatarDisplay('user', currentSettings.userAvatar, currentSettings.userAvatarFile);
-        updateAvatarDisplay('ai', currentSettings.aiAvatar, currentSettings.aiAvatarFile);
-
-        checkAPIStatus();
-      }
-
-      // 保存设置（按聊天ID分别保存）
-      function saveSettings() {
-        try {
-          const getVal = (id, fallback = '') => {
-            const el = document.getElementById(id);
-            return (el && el.value.trim()) || fallback;
-          };
-
-          // 检查必要的DOM元素是否存在
-          if (!document.getElementById('userName')) {
-            console.error('设置表单元素未找到');
-            showToast('设置表单未正确加载，请刷新页面重试');
-            return;
-          }
-
-          currentSettings.userName = getVal('userName', '用户');
-          currentSettings.userAge = getVal('userAge', '');
-          currentSettings.userHobby = getVal('userHobby', '');
-          currentSettings.userPersonality = getVal('userPersonality', '');
-          currentSettings.userBackground = getVal('userBackground', '');
-          currentSettings.aiName = getVal('aiName', 'AI助手');
-          currentSettings.aiAge = getVal('aiAge', '');
-          currentSettings.aiHobby = getVal('aiHobby', '');
-          currentSettings.aiPersonality = getVal('aiPersonality', '你是一个友善、专业的AI助手。');
-          currentSettings.aiBackground = getVal('aiBackground', '');
-
-          // 如果没有上传头像文件，则根据名称生成字母头像
-          if (!currentSettings.userAvatarFile) {
-            currentSettings.userAvatar = currentSettings.userName ? currentSettings.userName.charAt(0) : '用';
-          }
-          if (!currentSettings.aiAvatarFile) {
-            currentSettings.aiAvatar = currentSettings.aiName ? currentSettings.aiName.charAt(0) : 'AI';
-          }
-
-          const autoSaveEl = document.getElementById('autoSave');
-          if (autoSaveEl) currentSettings.autoSave = autoSaveEl.checked;
-          const soundEl = document.getElementById('soundEnabled');
-          if (soundEl) currentSettings.soundEnabled = soundEl.checked;
-          const worldBookEl = document.getElementById('worldBookEnabled');
-          if (worldBookEl) currentSettings.worldBookEnabled = worldBookEl.checked;
-
-          // 按聊天ID分别保存设置
-          const settingsKey = `chatSettings_${currentChatInfo.id}`;
-          localStorage.setItem(settingsKey, JSON.stringify(currentSettings));
-
-          // 强制更新显示
-          updateAvatarDisplay('user', currentSettings.userAvatar, currentSettings.userAvatarFile);
-          updateAvatarDisplay('ai', currentSettings.aiAvatar, currentSettings.aiAvatarFile);
-
-          // 立即同步到聊天信息并更新UI
-          if (currentChatInfo.type === 'ai') {
-            currentChatInfo.name = currentSettings.aiName;
-            // 同时更新头像信息
-            if (currentSettings.aiAvatarFile) {
-              currentChatInfo.avatarFile = currentSettings.aiAvatarFile;
-              currentChatInfo.avatar = '';
-            } else {
-              currentChatInfo.avatar = currentSettings.aiAvatar;
-              currentChatInfo.avatarFile = '';
-            }
-          }
-
-          updateUI();
-          const panel = document.getElementById('settingsPanel');
-          if (panel) panel.classList.remove('visible');
-          showToast('设置已保存');
-        } catch (error) {
-          console.error('保存设置时出错:', error);
-          showToast('保存设置失败: ' + error.message);
-        }
-      }
-
-      /* 统一的设置表单加载与保存逻辑已在后面新版函数中实现，旧版本已移除 */
-
-      // 从localStorage加载设置（按聊天ID分别加载）
-      function loadSettings() {
-        // 先尝试加载当前聊天的专用设置
-        const settingsKey = `chatSettings_${currentChatInfo.id}`;
-        let saved = localStorage.getItem(settingsKey);
-
-        // 如果没有专用设置，尝试加载旧的通用设置作为默认值
-        if (!saved) {
-          saved = localStorage.getItem('chatSettings');
-        }
-
-        if (saved) {
-          const parsedSettings = JSON.parse(saved);
-
-          currentSettings = { ...currentSettings, ...parsedSettings };
-
-          // 将设置值填回到表单字段中
-          const userNameEl = document.getElementById('userName');
-          const userAgeEl = document.getElementById('userAge');
-          const userHobbyEl = document.getElementById('userHobby');
-          const userPersonalityEl = document.getElementById('userPersonality');
-          const userBackgroundEl = document.getElementById('userBackground');
-          const aiNameEl = document.getElementById('aiName');
-          const aiAgeEl = document.getElementById('aiAge');
-          const aiHobbyEl = document.getElementById('aiHobby');
-          const aiPersonalityEl = document.getElementById('aiPersonality');
-          const aiBackgroundEl = document.getElementById('aiBackground');
-          const soundEl = document.getElementById('soundEnabled');
-
-          if (userNameEl) userNameEl.value = currentSettings.userName || '';
-          if (userAgeEl) userAgeEl.value = currentSettings.userAge || '';
-          if (userHobbyEl) userHobbyEl.value = currentSettings.userHobby || '';
-          if (userPersonalityEl) userPersonalityEl.value = currentSettings.userPersonality || '';
-          if (userBackgroundEl) userBackgroundEl.value = currentSettings.userBackground || '';
-          if (aiNameEl) aiNameEl.value = currentSettings.aiName || 'AI助手';
-          if (aiAgeEl) aiAgeEl.value = currentSettings.aiAge || '';
-          if (aiHobbyEl) aiHobbyEl.value = currentSettings.aiHobby || '';
-          if (aiPersonalityEl) aiPersonalityEl.value = currentSettings.aiPersonality || '你是一个友善、聪明的AI助手。';
-          if (aiBackgroundEl) aiBackgroundEl.value = currentSettings.aiBackground || '';
-          if (soundEl) soundEl.checked = currentSettings.soundEnabled || false;
-
-          // 更新头像显示
-          updateAvatarDisplay('user', currentSettings.userAvatar, currentSettings.userAvatarFile);
-          updateAvatarDisplay('ai', currentSettings.aiAvatar, currentSettings.aiAvatarFile);
-        } else {
-        }
-      }
-
-      // 保存聊天记录
-      function saveChatHistory() {
-        try {
-          const chatKey = `chatHistory_${currentChatInfo.id}`;
-          const dataToSave = JSON.stringify(messages);
-          try {
-            const getVal = (id, fallback = '') => {
-              const el = document.getElementById(id);
-              return (el && el.value.trim()) || fallback;
-            };
-            // 检查必要的DOM元素是否存在
-            if (!document.getElementById('userName')) {
-              console.error('设置表单元素未找到');
-              showToast('设置表单未正确加载，请刷新页面重试');
-              return;
-            }
-            currentSettings.userName = getVal('userName', '用户');
-            currentSettings.userAge = getVal('userAge', '');
-            currentSettings.userHobby = getVal('userHobby', '');
-            currentSettings.userPersonality = getVal('userPersonality', '');
-            currentSettings.userBackground = getVal('userBackground', '');
-            currentSettings.aiName = getVal('aiName', 'AI助手');
-            currentSettings.aiAge = getVal('aiAge', '');
-            currentSettings.aiHobby = getVal('aiHobby', '');
-            currentSettings.aiPersonality = getVal('aiPersonality', '你是一个友善、专业的AI助手。');
-            currentSettings.aiBackground = getVal('aiBackground', '');
-            // 如果没有上传头像文件，则根据名称生成字母头像
-            if (!currentSettings.userAvatarFile) {
-              currentSettings.userAvatar = currentSettings.userName ? currentSettings.userName.charAt(0) : '用';
-            }
-            if (!currentSettings.aiAvatarFile) {
-              currentSettings.aiAvatar = currentSettings.aiName ? currentSettings.aiName.charAt(0) : 'AI';
-            }
-            const autoSaveEl = document.getElementById('autoSave');
-            if (autoSaveEl) currentSettings.autoSave = autoSaveEl.checked;
-            const soundEl = document.getElementById('soundEnabled');
-            if (soundEl) currentSettings.soundEnabled = soundEl.checked;
-            const worldBookEl = document.getElementById('worldBookEnabled');
-            if (worldBookEl) currentSettings.worldBookEnabled = worldBookEl.checked;
-            // 限制头像base64等大字段
-            let tempSettings = JSON.parse(JSON.stringify(currentSettings));
-            if (tempSettings.userAvatarFile && tempSettings.userAvatarFile.length > 100000) {
-              tempSettings.userAvatarFile = '';
-              showToast('用户头像过大，未保存头像图片');
-            }
-            if (tempSettings.aiAvatarFile && tempSettings.aiAvatarFile.length > 100000) {
-              tempSettings.aiAvatarFile = '';
-              showToast('AI头像过大，未保存头像图片');
-            }
-            // 按聊天ID分别保存设置
-            const settingsKey = `chatSettings_${currentChatInfo.id}`;
-            try {
-              localStorage.setItem(settingsKey, JSON.stringify(tempSettings));
-            } catch (e) {
-              // 再次降级，移除所有头像字段
-              tempSettings.userAvatarFile = '';
-              tempSettings.aiAvatarFile = '';
-              try {
-                localStorage.setItem(settingsKey, JSON.stringify(tempSettings));
-                showToast('设置过大，已自动去除头像图片后保存');
-              } catch (e2) {
-                showToast('设置保存失败，数据过大或存储空间不足');
-                return;
-              }
-            }
-            // 强制更新显示
-            updateAvatarDisplay('user', tempSettings.userAvatar, tempSettings.userAvatarFile);
-            updateAvatarDisplay('ai', tempSettings.aiAvatar, tempSettings.aiAvatarFile);
-            // 立即同步到聊天信息并更新UI
-            if (currentChatInfo.type === 'ai') {
-              currentChatInfo.name = tempSettings.aiName;
-              if (tempSettings.aiAvatarFile) {
-                currentChatInfo.avatarFile = tempSettings.aiAvatarFile;
-                currentChatInfo.avatar = '';
-              } else {
-                currentChatInfo.avatar = tempSettings.aiAvatar;
-                currentChatInfo.avatarFile = '';
-              }
-            }
-            updateUI();
-            const panel = document.getElementById('settingsPanel');
-            if (panel) panel.classList.remove('visible');
-            showToast('设置已保存');
-          } catch (error) {
-            console.error('保存设置时出错:', error);
-            showToast('保存设置失败: ' + error.message);
-          }
-          // 重新添加所有消息
-          savedMessages.forEach(msg => {
-            addMessageToUI(msg);
-            messages.push(msg);
-          });
-
-          // 如果没有消息，显示欢迎消息
-          if (messages.length === 0) {
-            const welcomeMsg =
-              currentChatInfo.type === 'ai'
-                ? '你好！我是你的AI助手，有什么可以帮助你的吗？'
-                : '开始与 ' + currentChatInfo.name + ' 的对话吧！';
-            addMessage(currentChatInfo.type === 'ai' ? 'ai' : 'system', welcomeMsg);
-          }
-        } catch (e) {
-          console.error('加载聊天记录失败:', e);
-        }
-      }
-
-      // 添加消息到UI（用于加载历史记录）
-      function addMessageToUI(message) {
-        // 如果是图片消息，使用专门的图片消息函数
-        if (message.type === 'image' && message.imageData) {
-          addImageMessage(message.sender, message.imageData, false); // 不重复保存
-          return;
-        }
-
-        const messagesArea = document.getElementById('messagesArea');
-        const messageDiv = document.createElement('div');
-        const isUser = message.sender === 'user';
-
-        const avatarText = isUser ? currentSettings.userAvatar : currentSettings.aiAvatar;
-        const avatarFile = isUser ? currentSettings.userAvatarFile : currentSettings.aiAvatarFile;
-
-        // 构建头像HTML
-        let avatarHTML;
-        if (avatarFile) {
-          avatarHTML = `<img src="${avatarFile}" alt="头像" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;" />`;
-        } else {
-          avatarHTML = avatarText;
-        }
-
-        // 检查是否是红包消息
-        const messageText = message.text || '';
-        const isRedPacket = messageText.startsWith('🧧');
-        // 检查是否是转账消息
-        const isTransfer = messageText.startsWith('💸');
-        let messageContent;
-
-        if (isRedPacket) {
-          // 解析红包信息 - 新格式: 🧧 祝福语|金额
-          const redPacketMatch = messageText.match(/🧧\s*(.+)\|(.+)/);
-          if (redPacketMatch) {
-            const bless = redPacketMatch[1].trim();
-            const amount = redPacketMatch[2].trim();
-
-            messageContent = `
-                    <div class="redpacket-content" data-amount="${amount}">
-                      <span class="redpacket-icon">🧧</span>
-                      <div class="redpacket-info">
-                        <div class="redpacket-title">QQ红包</div>
-                        <div class="redpacket-bless">${bless}</div>
-                      </div>
-                    </div>
-                  `;
-          } else {
-            messageContent = escapeHtml(messageText);
-          }
-        } else if (isTransfer) {
-          // 解析转账信息 - 格式: 💸 向你转账/已接受转账/退还转账 100.00元 或 💸 向你转账 100.00元 - 说明
-          const transferMatch = messageText.match(
-            /💸\s*(?:向你转账|已接受转账|退还转账)\s*(\d+\.?\d*)元(?:\s*-\s*(.+))?/,
-          );
-          if (transferMatch) {
-            const amount = transferMatch[1].trim();
-            const msg = transferMatch[2] ? transferMatch[2].trim() : '转账';
-            const isAccepted = messageText.includes('已接受转账');
-
-            messageContent = `
-                    <div class="transfer-content" data-amount="${amount}" data-message="${msg}" ${
-              isAccepted ? 'data-accepted="true"' : ''
-            }>
-                      <span class="transfer-icon">💸</span>
-                      <div class="transfer-info">
-                        <div class="transfer-title">转账</div>
-                        <div class="transfer-amount">¥${amount}</div>
-                        <div class="transfer-message-text">${msg}</div>
-                      </div>
-                    </div>
-                  `;
-          } else {
-            messageContent = escapeHtml(messageText);
-          }
-        } else if (messageText.startsWith('[表情包:') && messageText.endsWith(']')) {
-          // 处理表情包消息
-
-          const emojiMatch = messageText.match(/\[表情包:(.+)\]/);
-          if (emojiMatch) {
-            const emojiSrc = emojiMatch[1];
-
-            messageContent = `<img src="${emojiSrc}" alt="表情包" style="max-width: 120px; max-height: 120px; border-radius: 8px;" onerror="this.alt='[表情包加载失败]'; this.style.display='none'; this.nextSibling.style.display='inline'"><span style="display:none">[表情包]</span>`;
-          } else {
-            messageContent = escapeHtml(messageText);
-          }
-        } else {
-          messageContent = escapeHtml(messageText);
-        }
-
-        // 检查消息类型
-        const isEmoji = message.text.startsWith('[表情包:') && message.text.endsWith(']');
-
-        messageDiv.className = `message ${isUser ? 'sent' : 'received'}`;
-        messageDiv.setAttribute('data-message-id', `history_${message.id || Date.now()}`);
-        messageDiv.innerHTML = `
-                <div class="message-avatar">${avatarHTML}</div>
-                <div>
-                  <div class="message-bubble ${isRedPacket ? 'redpacket-message' : ''} ${
-          isTransfer ? 'transfer-message' : ''
-        } ${isEmoji ? 'emoji-message' : ''}" ${
-          isRedPacket ? `onclick="openRedPacket('history_${message.id || Date.now()}')"` : ''
-        } ${isTransfer ? `onclick="openTransfer('history_${message.id || Date.now()}')"` : ''}>${messageContent}</div>
-                  <div class="message-time">${formatTime(new Date(message.timestamp))}</div>
-                </div>
-              `;
-
-        messagesArea.appendChild(messageDiv);
-        messagesArea.scrollTop = messagesArea.scrollHeight;
-
-        // 检查红包状态并更新显示
-        if (isRedPacket) {
-          const messageId = `history_${message.id || Date.now()}`;
-          const redPacketKey = `redpacket_claimed_${messageId}`;
-          const isClaimed = localStorage.getItem(redPacketKey) === 'true';
-
-          if (isClaimed) {
-            // 延迟更新，确保DOM已经渲染
-            setTimeout(() => {
-              updateRedPacketToClaimed(messageId);
-            }, 10);
-          }
-        }
-
-        // 检查转账状态并更新显示
-        if (isTransfer) {
-          const messageId = `history_${message.id || Date.now()}`;
-          const transferKey = `transfer_accepted_${messageId}`;
-          const isAcceptedInStorage = localStorage.getItem(transferKey) === 'true';
-          const isAcceptedInText = message.text.includes('已接受转账');
-
-          if (isAcceptedInStorage || isAcceptedInText) {
-            // 延迟更新，确保DOM已经渲染
-            setTimeout(() => {
-              updateTransferToAccepted(messageId);
-            }, 10);
-          }
-        }
-      }
-
-      // 检查API配置状态
-      function checkAPIStatus() {
-        const apiSettings = JSON.parse(localStorage.getItem('apiSettings') || '{}');
-        const statusElement = document.getElementById('apiStatus');
-
-        if (statusElement) {
-          if (apiSettings.selectedService && apiSettings[apiSettings.selectedService]?.key) {
-            statusElement.textContent = `已配置 (${apiSettings.selectedService.toUpperCase()})`;
-            statusElement.style.color = '#34c759';
-          } else {
-            statusElement.textContent = '未配置';
-            statusElement.style.color = '#ff9500';
-          }
-        }
-      }
-
-      // 更新界面显示
-      function updateUI() {
-        // 如果是AI聊天，同步AI设置到聊天信息
-        if (currentChatInfo.type === 'ai') {
-          // 强制重新从localStorage读取最新设置
-          const saved = localStorage.getItem('chatSettings');
-          if (saved) {
-            const latestSettings = JSON.parse(saved);
-
-            // 更新AI名称
-            if (latestSettings.aiName) {
-              currentChatInfo.name = latestSettings.aiName;
-              currentSettings.aiName = latestSettings.aiName;
-            }
-
-            // 更新头像信息（仅当currentChatInfo没有头像或头像为空时）
-            if (!currentChatInfo.avatarFile && (!currentChatInfo.avatar || currentChatInfo.avatar === '?')) {
-              if (latestSettings.aiAvatarFile) {
-                currentChatInfo.avatarFile = latestSettings.aiAvatarFile;
-                currentChatInfo.avatar = '';
-                currentSettings.aiAvatarFile = latestSettings.aiAvatarFile;
-              } else if (latestSettings.aiAvatar) {
-                currentChatInfo.avatar = latestSettings.aiAvatar;
-                currentChatInfo.avatarFile = '';
-                currentSettings.aiAvatar = latestSettings.aiAvatar;
-              }
-            } else {
-              // 只同步到currentSettings，不覆盖currentChatInfo
-              if (latestSettings.aiAvatarFile) {
-                currentSettings.aiAvatarFile = latestSettings.aiAvatarFile;
-              } else {
-                currentSettings.aiAvatar = latestSettings.aiAvatar || 'AI';
-              }
-            }
-          }
-        }
-
-        // 更新导航栏显示
-        document.getElementById('chatName').textContent = currentChatInfo.name;
-        document.getElementById('chatStatus').textContent = currentChatInfo.status;
-
-        // 更新头像显示
-        updateAvatarDisplay('user', currentSettings.userAvatar, currentSettings.userAvatarFile);
-        updateAvatarDisplay('ai', currentSettings.aiAvatar, currentSettings.aiAvatarFile);
-
-        // 更新聊天信息面板（使用最新的currentChatInfo）
-        updateChatInfoDisplay();
-
-        // 检查API配置状态
-        checkAPIStatus();
       }
 
       // 工具函数
