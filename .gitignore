@@ -10,16 +10,8 @@ Thumbs.db
 *.swp
 *.swo
 
-# 忽略测试文件
-test-*.html
-debug-*.html
-
 # 忽略临时文档
 新建 文本文档.txt
-*.txt
 
 # 忽略开发相关的文件夹
 mcp-server-project/
-
-# 忽略工作文件
-work.html

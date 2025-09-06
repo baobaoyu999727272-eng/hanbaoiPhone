@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>世界书</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, Arial,
+          sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #a1c4fd 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: backgroundShift 10s ease-in-out infinite;
+      }
+
+      @keyframes backgroundShift {
+        0%,
+        100% {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #a1c4fd 100%);
+        }
+        33% {
+          background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 50%, #667eea 100%);
+        }
+        66% {
+          background: linear-gradient(135deg, #764ba2 0%, #667eea 50%, #c2e9fb 100%);
+        }
+      }
+
+      .iphone-frame {
+        width: 390px;
+        height: 844px;
+        border-radius: 54px;
+        background: linear-gradient(180deg, #0f1724 0%, #0b1220 60%);
+        border: none;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), inset 0 -6px 20px rgba(0, 0, 0, 0.6),
+          0 8px 30px rgba(2, 6, 23, 0.55);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .screen {
+        width: 370px;
+        height: 804px;
+        border-radius: 44px;
+        background: #f7f7f7;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* 灵动岛 */
+      .dynamic-island {
+        position: absolute;
+        top: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 36px;
+        background: #0b0b0b;
+        border-radius: 18px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+        z-index: 10;
+      }
+
+      /* 状态栏 */
+      .status-bar {
+        position: absolute;
+        top: 6px;
+        left: 0;
+        width: 100%;
+        height: 48px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding: 6px 18px;
+        color: #000;
+        font-size: 15px;
+        font-weight: 600;
+        pointer-events: none;
+        z-index: 5;
+      }
+
+      .status-left {
+        font-weight: 600;
+      }
+      .status-right {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        color: #00d4aa;
+      }
+
+      /* 导航栏 */
+      .navbar {
+        margin-top: 54px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 20px;
+        height: 60px;
+      }
+
+      .nav-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1a1a1a;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .nav-btn {
+        background: none;
+        border: none;
+        font-size: 18px;
+        color: #007aff;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+      }
+
+      .nav-btn:hover {
+        background: rgba(0, 122, 255, 0.1);
+      }
+
+      /* 主内容区域 */
+      .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* 搜索栏 */
+      .search-bar {
+        padding: 16px 20px;
+        background: #fff;
+        border-bottom: 1px solid #e5e5e7;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e5e5e7;
+        border-radius: 12px;
+        font-size: 16px;
+        background: #f8f9fa;
+        transition: all 0.2s ease;
+      }
+
+      .search-input:focus {
+        outline: none;
+        border-color: #007aff;
+        background: #fff;
+      }
+
+      /* 分类标签 */
+      .category-tabs {
+        display: flex;
+        overflow-x: auto;
+        padding: 8px 20px;
+        background: #fff;
+        border-bottom: 1px solid #e5e5e7;
+        gap: 8px;
+      }
+
+      .category-tab {
+        flex-shrink: 0;
+        padding: 8px 16px;
+        border-radius: 20px;
+        border: 2px solid #e5e5e7;
+        background: #f8f9fa;
+        color: #666;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .category-tab.active {
+        background: #007aff;
+        border-color: #007aff;
+        color: #fff;
+      }
+
+      /* 条目列表 */
+      .entries-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+      }
+
+      .entry-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e5e7;
+        transition: all 0.2s ease;
+      }
+
+      .entry-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      }
+
+      .entry-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      .entry-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a1a;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .entry-category {
+        background: #007aff;
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .entry-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .action-btn {
+        background: none;
+        border: none;
+        padding: 6px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.2s ease;
+      }
+
+      .action-btn:hover {
+        background: rgba(0, 0, 0, 0.1);
+      }
+      .action-btn.edit {
+        color: #007aff;
+      }
+      .action-btn.delete {
+        color: #ff3b30;
+      }
+
+      .entry-keywords {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+
+      .keyword-tag {
+        background: #f0f0f0;
+        color: #666;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .character-binding {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        margin-bottom: 8px;
+        display: inline-block;
+      }
+
+      .entry-content {
+        color: #666;
+        font-size: 14px;
+        line-height: 1.4;
+        max-height: 60px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .entry-priority {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+
+      .priority-high {
+        background: #ff3b30;
+      }
+      .priority-medium {
+        background: #ff9500;
+      }
+      .priority-low {
+        background: #34c759;
+      }
+
+      /* 添加按钮 */
+      .add-btn {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        background: #007aff;
+        border: none;
+        border-radius: 28px;
+        color: #fff;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4);
+        transition: all 0.2s ease;
+        z-index: 100;
+      }
+
+      .add-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(0, 122, 255, 0.6);
+      }
+
+      /* 模态框 */
+      .modal {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        border-radius: 44px;
+        overflow: hidden;
+      }
+
+      .modal-content {
+        background: #fff;
+        border-radius: 16px;
+        padding: 20px;
+        width: 85%;
+        max-width: 320px;
+        max-height: 70%;
+        overflow-y: auto;
+        margin: 0 auto;
+      }
+
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .modal-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #666;
+        cursor: pointer;
+      }
+
+      .form-group {
+        margin-bottom: 16px;
+      }
+
+      .form-label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        color: #333;
+      }
+
+      .form-input,
+      .form-textarea,
+      .form-select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e5e5e7;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.2s ease;
+      }
+
+      .form-input:focus,
+      .form-textarea:focus,
+      .form-select:focus {
+        outline: none;
+        border-color: #007aff;
+      }
+
+      .form-textarea {
+        min-height: 100px;
+        resize: vertical;
+      }
+
+      .keywords-input {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 8px;
+        border: 2px solid #e5e5e7;
+        border-radius: 8px;
+        min-height: 44px;
+        align-items: center;
+      }
+
+      .keywords-input:focus-within {
+        border-color: #007aff;
+      }
+
+      .keyword-input {
+        border: none;
+        outline: none;
+        padding: 4px;
+        font-size: 14px;
+        flex: 1;
+        min-width: 80px;
+      }
+
+      .btn-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+      }
+
+      .btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .btn-primary {
+        background: #007aff;
+        color: #fff;
+      }
+
+      .btn-primary:hover {
+        background: #0056d3;
+      }
+
+      .btn-secondary {
+        background: #f0f0f0;
+        color: #333;
+      }
+
+      .btn-secondary:hover {
+        background: #e0e0e0;
+      }
+
+      /* 空状态 */
+      .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+      }
+
+      .empty-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+      }
+
+      .empty-text {
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+
+      .empty-subtext {
+        font-size: 14px;
+        opacity: 0.7;
+      }
+
+      /* 滚动条样式 */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="iphone-frame">
+      <div class="screen">
+        <!-- 灵动岛 -->
+        <div class="dynamic-island"></div>
+
+        <!-- 状态栏 -->
+        <div class="status-bar">
+          <div class="status-left" id="currentTime">9:41</div>
+          <div class="status-right">
+            <span>100%</span>
+            <span>🔋</span>
+          </div>
+        </div>
+
+        <!-- 导航栏 -->
+        <div class="navbar">
+          <button class="nav-btn" onclick="goBack()">‹</button>
+          <div class="nav-title">📚 世界书</div>
+          <button class="nav-btn" onclick="showImportExport()">⋯</button>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="main-content">
+          <!-- 搜索栏 -->
+          <div class="search-bar">
+            <input
+              type="text"
+              class="search-input"
+              id="searchInput"
+              placeholder="搜索条目、关键词..."
+              oninput="filterEntries()"
+            />
+          </div>
+
+          <!-- 分类标签 -->
+          <div class="category-tabs">
+            <div class="category-tab active" data-category="all" onclick="filterByCategory('all')">全部</div>
+            <div class="category-tab" data-category="character" onclick="filterByCategory('character')">角色</div>
+            <div class="category-tab" data-category="location" onclick="filterByCategory('location')">地点</div>
+            <div class="category-tab" data-category="item" onclick="filterByCategory('item')">物品</div>
+            <div class="category-tab" data-category="lore" onclick="filterByCategory('lore')">设定</div>
+            <div class="category-tab" data-category="event" onclick="filterByCategory('event')">事件</div>
+          </div>
+
+          <!-- 条目列表 -->
+          <div class="entries-container" id="entriesContainer">
+            <!-- 空状态 -->
+            <div class="empty-state" id="emptyState">
+              <div class="empty-icon">📖</div>
+              <div class="empty-text">还没有世界书条目</div>
+              <div class="empty-subtext">点击右下角的 + 按钮添加第一个条目</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 添加按钮 -->
+        <button class="add-btn" onclick="showAddModal()">+</button>
+
+        <!-- 添加/编辑模态框 -->
+        <div class="modal" id="entryModal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <div class="modal-title" id="modalTitle">添加世界书条目</div>
+              <button class="close-btn" onclick="hideModal()">&times;</button>
+            </div>
+
+            <form id="entryForm" onsubmit="return handleFormSubmit(event)">
+              <div class="form-group">
+                <label class="form-label">标题 *</label>
+                <input type="text" class="form-input" id="entryTitle" placeholder="输入条目标题" required />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">分类</label>
+                <select class="form-select" id="entryCategory">
+                  <option value="character">角色</option>
+                  <option value="location">地点</option>
+                  <option value="item">物品</option>
+                  <option value="lore">设定</option>
+                  <option value="event">事件</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">关键词 (用逗号分隔)</label>
+                <input type="text" class="form-input" id="entryKeywords" placeholder="关键词1, 关键词2, ..." />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">优先级</label>
+                <select class="form-select" id="entryPriority">
+                  <option value="low">低 - 不太重要</option>
+                  <option value="medium" selected>中 - 一般重要</option>
+                  <option value="high">高 - 非常重要</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">角色绑定 (可选)</label>
+                <select class="form-select" id="entryCharacterBinding">
+                  <option value="">无绑定 - 全局可用</option>
+                  <option value="user">用户角色专用</option>
+                  <option value="ai">AI角色专用</option>
+                </select>
+                <small style="color: #666; font-size: 12px; margin-top: 4px; display: block">
+                  选择后，此条目仅在对应角色相关的对话中生效
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">内容 *</label>
+                <textarea class="form-textarea" id="entryContent" placeholder="输入详细描述..." required></textarea>
+              </div>
+
+              <div class="btn-group">
+                <button type="button" class="btn btn-secondary" onclick="hideModal()">取消</button>
+                <button type="submit" class="btn btn-primary" onclick="return handleFormSubmit(event)">保存</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- 导入导出模态框 -->
+        <div class="modal" id="importExportModal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <div class="modal-title">导入/导出</div>
+              <button class="close-btn" onclick="hideImportExportModal()">&times;</button>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">导出世界书</label>
+              <button type="button" class="btn btn-primary" onclick="exportWorldBook()">导出为JSON文件</button>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">导入世界书</label>
+              <input type="file" id="importFile" accept=".json" style="display: none" onchange="importWorldBook()" />
+              <button type="button" class="btn btn-secondary" onclick="document.getElementById('importFile').click()">
+                选择JSON文件
+              </button>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">清空所有数据</label>
+              <button type="button" class="btn btn-secondary" onclick="clearAllData()">清空世界书</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 全局变量
+      let worldBookEntries = [];
+      let currentEditingId = null;
+      let currentFilter = 'all';
+
+      // 页面加载时初始化
+      document.addEventListener('DOMContentLoaded', function () {
+        console.log('页面加载完成');
+        loadWorldBookData();
+        renderEntries();
+
+        // 使用事件委托处理动态生成的按钮
+        const entriesContainer = document.getElementById('entriesContainer');
+        if (entriesContainer) {
+          entriesContainer.addEventListener('click', function (e) {
+            const button = e.target.closest('.action-btn');
+            if (button) {
+              const action = button.getAttribute('data-action');
+              const id = button.getAttribute('data-id');
+              console.log('按钮点击:', action, id);
+
+              if (action === 'edit') {
+                editEntry(id);
+              } else if (action === 'delete') {
+                deleteEntry(id);
+              }
+            }
+          });
+        }
+      });
+
+      // 加载世界书数据
+      function loadWorldBookData() {
+        const saved = localStorage.getItem('worldBookEntries');
+        if (saved) {
+          worldBookEntries = JSON.parse(saved);
+        }
+      }
+
+      // 保存世界书数据
+      function saveWorldBookData() {
+        console.log('保存世界书数据，条目数量:', worldBookEntries.length);
+        try {
+          localStorage.setItem('worldBookEntries', JSON.stringify(worldBookEntries));
+          console.log('保存成功');
+          return true;
+        } catch (error) {
+          console.error('保存失败:', error);
+          alert('保存失败：' + error.message);
+          return false;
+        }
+      }
+
+      // 渲染条目列表
+      function renderEntries() {
+        const container = document.getElementById('entriesContainer');
+        const emptyState = document.getElementById('emptyState');
+
+        if (!container) {
+          console.error('未找到 entriesContainer 元素');
+          return;
+        }
+
+        if (!emptyState) {
+          console.error('未找到 emptyState 元素');
+          return;
+        }
+
+        // 过滤条目
+        let filteredEntries = worldBookEntries;
+
+        // 按分类过滤
+        if (currentFilter !== 'all') {
+          filteredEntries = filteredEntries.filter(entry => entry.category === currentFilter);
+        }
+
+        // 按搜索词过滤
+        const searchInput = document.getElementById('searchInput');
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+        if (searchTerm) {
+          filteredEntries = filteredEntries.filter(
+            entry =>
+              entry.title.toLowerCase().includes(searchTerm) ||
+              entry.content.toLowerCase().includes(searchTerm) ||
+              entry.keywords.some(keyword => keyword.toLowerCase().includes(searchTerm)),
+          );
+        }
+
+        if (filteredEntries.length === 0) {
+          emptyState.style.display = 'block';
+          container.innerHTML = '';
+          container.appendChild(emptyState);
+          return;
+        }
+
+        emptyState.style.display = 'none';
+
+        // 按优先级排序
+        const priorityOrder = { high: 3, medium: 2, low: 1 };
+        filteredEntries.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+
+        container.innerHTML = filteredEntries
+          .map(
+            entry => `
+                <div class="entry-card">
+                    <div class="entry-priority priority-${entry.priority}"></div>
+                    <div class="entry-header">
+                        <div class="entry-title">
+                            ${getCategoryIcon(entry.category)} ${entry.title}
+                        </div>
+                        <div class="entry-actions">
+                            <button class="action-btn edit" data-action="edit" data-id="${
+                              entry.id
+                            }" title="编辑">✏️</button>
+                            <button class="action-btn delete" data-action="delete" data-id="${
+                              entry.id
+                            }" title="删除">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="entry-category">${getCategoryName(entry.category)}</div>
+                    ${
+                      entry.characterBinding
+                        ? `
+                        <div class="character-binding">
+                            ${getCharacterBindingIcon(entry.characterBinding)} ${getCharacterBindingName(
+                            entry.characterBinding,
+                          )}
+                        </div>
+                    `
+                        : ''
+                    }
+                    ${
+                      entry.keywords.length > 0
+                        ? `
+                        <div class="entry-keywords">
+                            ${entry.keywords.map(keyword => `<span class="keyword-tag">${keyword}</span>`).join('')}
+                        </div>
+                    `
+                        : ''
+                    }
+                    <div class="entry-content">${entry.content}</div>
+                </div>
+            `,
+          )
+          .join('');
+      }
+
+      // 获取分类图标
+      function getCategoryIcon(category) {
+        const icons = {
+          character: '👤',
+          location: '🏞️',
+          item: '📦',
+          lore: '📜',
+          event: '⚡',
+        };
+        return icons[category] || '📝';
+      }
+
+      // 获取分类名称
+      function getCategoryName(category) {
+        const names = {
+          character: '角色',
+          location: '地点',
+          item: '物品',
+          lore: '设定',
+          event: '事件',
+        };
+        return names[category] || '其他';
+      }
+
+      // 获取角色绑定图标
+      function getCharacterBindingIcon(binding) {
+        const icons = {
+          user: '👤',
+          ai: '🤖',
+        };
+        return icons[binding] || '';
+      }
+
+      // 获取角色绑定名称
+      function getCharacterBindingName(binding) {
+        const names = {
+          user: '用户专用',
+          ai: 'AI专用',
+        };
+        return names[binding] || '';
+      }
+
+      // 按分类过滤
+      function filterByCategory(category) {
+        currentFilter = category;
+
+        // 更新标签样式
+        document.querySelectorAll('.category-tab').forEach(tab => {
+          tab.classList.remove('active');
+        });
+        document.querySelector(`[data-category="${category}"]`).classList.add('active');
+
+        renderEntries();
+      }
+
+      // 搜索过滤
+      function filterEntries() {
+        renderEntries();
+      }
+
+      // 显示添加模态框
+      function showAddModal() {
+        console.log('显示添加模态框');
+        currentEditingId = null;
+        document.getElementById('modalTitle').textContent = '添加世界书条目';
+        document.getElementById('entryForm').reset();
+        document.getElementById('entryModal').style.display = 'flex';
+      }
+
+      // 显示编辑模态框
+      function editEntry(id) {
+        console.log('编辑条目，ID:', id);
+        currentEditingId = id;
+        const entry = worldBookEntries.find(e => e.id === id);
+        if (!entry) {
+          console.error('未找到条目:', id);
+          return;
+        }
+
+        console.log('找到条目:', entry);
+        document.getElementById('modalTitle').textContent = '编辑世界书条目';
+        document.getElementById('entryTitle').value = entry.title;
+        document.getElementById('entryCategory').value = entry.category;
+        document.getElementById('entryKeywords').value = entry.keywords.join(', ');
+        document.getElementById('entryPriority').value = entry.priority;
+        document.getElementById('entryCharacterBinding').value = entry.characterBinding || '';
+        document.getElementById('entryContent').value = entry.content;
+        document.getElementById('entryModal').style.display = 'flex';
+      }
+
+      // 删除条目
+      function deleteEntry(id) {
+        console.log('删除条目，ID:', id);
+        if (confirm('确定要删除这个条目吗？')) {
+          console.log('用户确认删除');
+          const originalLength = worldBookEntries.length;
+          worldBookEntries = worldBookEntries.filter(e => e.id.toString() !== id.toString());
+          console.log('删除后条目数量:', worldBookEntries.length, '原数量:', originalLength);
+
+          if (worldBookEntries.length < originalLength) {
+            saveWorldBookData();
+            renderEntries();
+            console.log('删除成功');
+          } else {
+            console.error('删除失败，未找到条目');
+            alert('删除失败：未找到要删除的条目');
+          }
+        }
+      }
+
+      // 隐藏模态框
+      function hideModal() {
+        console.log('隐藏模态框');
+        document.getElementById('entryModal').style.display = 'none';
+        // 重置表单
+        document.getElementById('entryForm').reset();
+        currentEditingId = null;
+      }
+
+      // 表单提交处理函数
+      function handleFormSubmit(e) {
+        e.preventDefault();
+        console.log('表单提交开始');
+
+        // 检查所有必需的DOM元素
+        const titleInput = document.getElementById('entryTitle');
+        const categorySelect = document.getElementById('entryCategory');
+        const keywordsInput = document.getElementById('entryKeywords');
+        const prioritySelect = document.getElementById('entryPriority');
+        const bindingSelect = document.getElementById('entryCharacterBinding');
+        const contentTextarea = document.getElementById('entryContent');
+
+        if (!titleInput || !categorySelect || !keywordsInput || !prioritySelect || !bindingSelect || !contentTextarea) {
+          console.error('表单元素检查失败:', {
+            titleInput: !!titleInput,
+            categorySelect: !!categorySelect,
+            keywordsInput: !!keywordsInput,
+            prioritySelect: !!prioritySelect,
+            bindingSelect: !!bindingSelect,
+            contentTextarea: !!contentTextarea,
+          });
+          alert('表单元素未找到，请刷新页面重试');
+          return false;
+        }
+
+        const title = titleInput.value.trim();
+        const category = categorySelect.value;
+        const keywords = keywordsInput.value
+          .split(',')
+          .map(k => k.trim())
+          .filter(k => k.length > 0);
+        const priority = prioritySelect.value;
+        const characterBinding = bindingSelect.value;
+        const content = contentTextarea.value.trim();
+
+        console.log('表单数据:', { title, category, keywords, priority, characterBinding, content });
+
+        if (!title || !content) {
+          alert('请填写标题和内容');
+          return false;
+        }
+
+        const entry = {
+          id: currentEditingId || Date.now().toString(),
+          title,
+          category,
+          keywords,
+          priority,
+          characterBinding,
+          content,
+          createdAt: currentEditingId
+            ? worldBookEntries.find(e => e.id === currentEditingId)?.createdAt || new Date().toISOString()
+            : new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        console.log('创建的条目:', entry);
+
+        if (currentEditingId) {
+          console.log('编辑模式，当前ID:', currentEditingId, typeof currentEditingId);
+          const index = worldBookEntries.findIndex(e => {
+            console.log('比较ID:', e.id, typeof e.id, '与', currentEditingId, typeof currentEditingId);
+            return e.id.toString() === currentEditingId.toString();
+          });
+          console.log('找到索引:', index);
+          if (index !== -1) {
+            worldBookEntries[index] = entry;
+            console.log('更新条目成功，索引:', index);
+          } else {
+            console.error(
+              '未找到要编辑的条目，所有条目ID:',
+              worldBookEntries.map(e => ({ id: e.id, type: typeof e.id })),
+            );
+            alert('编辑失败：未找到要编辑的条目');
+            return false;
+          }
+        } else {
+          worldBookEntries.push(entry);
+          console.log('添加新条目，总数:', worldBookEntries.length);
+        }
+
+        const saveSuccess = saveWorldBookData();
+        if (saveSuccess) {
+          console.log('保存成功，开始渲染条目');
+          renderEntries();
+          hideModal();
+          console.log('操作完成');
+        }
+
+        return false; // 阻止表单默认提交
+      }
+
+      // 显示导入导出模态框
+      function showImportExport() {
+        document.getElementById('importExportModal').style.display = 'flex';
+      }
+
+      // 隐藏导入导出模态框
+      function hideImportExportModal() {
+        document.getElementById('importExportModal').style.display = 'none';
+      }
+
+      // 导出世界书
+      function exportWorldBook() {
+        const data = {
+          version: '1.0',
+          exportDate: new Date().toISOString(),
+          entries: worldBookEntries,
+        };
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `世界书_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      // 导入世界书
+      function importWorldBook() {
+        const file = document.getElementById('importFile').files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          try {
+            const data = JSON.parse(e.target.result);
+            if (data.entries && Array.isArray(data.entries)) {
+              if (confirm('这将覆盖当前的世界书数据，确定要继续吗？')) {
+                worldBookEntries = data.entries;
+                saveWorldBookData();
+                renderEntries();
+                hideImportExportModal();
+                alert('导入成功！');
+              }
+            } else {
+              alert('文件格式不正确');
+            }
+          } catch (error) {
+            alert('文件解析失败');
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      // 清空所有数据
+      function clearAllData() {
+        if (confirm('确定要清空所有世界书数据吗？此操作不可撤销！')) {
+          worldBookEntries = [];
+          saveWorldBookData();
+          renderEntries();
+          hideImportExportModal();
+        }
+      }
+
+      // 返回上一页
+      function goBack() {
+        window.history.back();
+      }
+
+      // 点击模态框外部关闭
+      document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('modal')) {
+          console.log('点击模态框外部，关闭模态框');
+          if (e.target.id === 'entryModal') {
+            hideModal();
+          } else if (e.target.id === 'importExportModal') {
+            hideImportExportModal();
+          }
+        }
+      });
+
+      // 为聊天系统提供的API函数
+      window.getWorldBookEntriesForCharacter = function (characterType, keywords = []) {
+        loadWorldBookData();
+
+        // 获取全局条目和特定角色的条目
+        let relevantEntries = worldBookEntries.filter(
+          entry => !entry.characterBinding || entry.characterBinding === characterType,
+        );
+
+        // 如果提供了关键词，进一步过滤
+        if (keywords.length > 0) {
+          relevantEntries = relevantEntries.filter(entry => {
+            const searchText = (entry.title + ' ' + entry.content + ' ' + entry.keywords.join(' ')).toLowerCase();
+            return keywords.some(keyword => searchText.includes(keyword.toLowerCase()));
+          });
+        }
+
+        // 按优先级排序
+        const priorityOrder = { high: 3, medium: 2, low: 1 };
+        relevantEntries.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+
+        return relevantEntries;
+      };
+
+      // 获取所有世界书条目（用于导出或其他用途）
+      window.getAllWorldBookEntries = function () {
+        loadWorldBookData();
+        return worldBookEntries;
+      };
+
+      // 更新状态栏时间
+      function updateTime() {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const timeString = `${hours}:${minutes}`;
+
+        const timeElement = document.getElementById('currentTime');
+        if (timeElement) {
+          timeElement.textContent = timeString;
+        }
+      }
+
+      // 初始化时间更新
+      updateTime();
+      setInterval(updateTime, 60000); // 每分钟更新一次
+    </script>
+  </body>
+</html>
