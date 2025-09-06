@@ -4319,6 +4319,303 @@
         };
       }
 
+      // 加载设置函数
+      function loadSettings() {
+        try {
+          if (!currentChatInfo || !currentChatInfo.id) {
+            console.warn('聊天信息未初始化，使用默认设置');
+            return;
+          }
+
+          const settingsKey = `chatSettings_${currentChatInfo.id}`;
+          const saved = localStorage.getItem(settingsKey);
+          
+          if (saved) {
+            try {
+              const settings = JSON.parse(saved);
+              Object.assign(currentSettings, settings);
+              console.log('已加载设置:', settings);
+            } catch (e) {
+              console.error('解析设置失败:', e);
+            }
+          }
+
+          // 加载到表单
+          const setVal = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.value = value || '';
+          };
+
+          setVal('userName', currentSettings.userName);
+          setVal('userAge', currentSettings.userAge);
+          setVal('userHobby', currentSettings.userHobby);
+          setVal('userPersonality', currentSettings.userPersonality);
+          setVal('userBackground', currentSettings.userBackground);
+          setVal('aiName', currentSettings.aiName);
+          setVal('aiAge', currentSettings.aiAge);
+          setVal('aiHobby', currentSettings.aiHobby);
+          setVal('aiPersonality', currentSettings.aiPersonality);
+          setVal('aiBackground', currentSettings.aiBackground);
+
+          // 复选框
+          const autoSaveEl = document.getElementById('autoSave');
+          if (autoSaveEl) autoSaveEl.checked = currentSettings.autoSave || false;
+          const soundEl = document.getElementById('soundEnabled');
+          if (soundEl) soundEl.checked = currentSettings.soundEnabled || false;
+          const worldBookEl = document.getElementById('worldBookEnabled');
+          if (worldBookEl) worldBookEl.checked = currentSettings.worldBookEnabled || false;
+
+        } catch (e) {
+          console.error('加载设置失败:', e);
+        }
+      }
+
+      // 更新界面函数
+      function updateUI() {
+        try {
+          if (!currentChatInfo) return;
+
+          // 更新聊天标题和状态
+          const chatNameEl = document.getElementById('chatName');
+          const chatStatusEl = document.getElementById('chatStatus');
+          
+          if (chatNameEl) chatNameEl.textContent = currentChatInfo.name || '未知联系人';
+          if (chatStatusEl) chatStatusEl.textContent = currentChatInfo.status || '离线';
+
+          // 更新头像显示
+          if (typeof updateAvatarDisplay === 'function') {
+            updateAvatarDisplay('user', currentSettings.userAvatar, currentSettings.userAvatarFile);
+            updateAvatarDisplay('ai', currentSettings.aiAvatar, currentSettings.aiAvatarFile);
+          }
+
+          console.log('界面更新完成');
+        } catch (e) {
+          console.error('更新界面失败:', e);
+        }
+      }
+
+      // 保存设置函数 - 修复版本
+      function saveSettings() {
+        try {
+          console.log('开始保存设置...');
+          
+          const getVal = (id, fallback = '') => {
+            const el = document.getElementById(id);
+            return (el && el.value.trim()) || fallback;
+          };
+
+          // 检查必要的DOM元素
+          if (!document.getElementById('userName')) {
+            console.error('设置表单元素未找到');
+            showToast('设置表单未正确加载，请刷新页面重试');
+            return;
+          }
+
+          // 收集设置数据
+          currentSettings.userName = getVal('userName', '用户');
+          currentSettings.userAge = getVal('userAge', '');
+          currentSettings.userHobby = getVal('userHobby', '');
+          currentSettings.userPersonality = getVal('userPersonality', '');
+          currentSettings.userBackground = getVal('userBackground', '');
+          currentSettings.aiName = getVal('aiName', 'AI助手');
+          currentSettings.aiAge = getVal('aiAge', '');
+          currentSettings.aiHobby = getVal('aiHobby', '');
+          currentSettings.aiPersonality = getVal('aiPersonality', '你是一个友善、专业的AI助手。');
+          currentSettings.aiBackground = getVal('aiBackground', '');
+
+          // 处理头像逻辑
+          if (!currentSettings.userAvatarFile) {
+            currentSettings.userAvatar = currentSettings.userName ? currentSettings.userName.charAt(0) : '用';
+          }
+          if (!currentSettings.aiAvatarFile) {
+            currentSettings.aiAvatar = currentSettings.aiName ? currentSettings.aiName.charAt(0) : 'AI';
+          }
+
+          // 处理复选框
+          const autoSaveEl = document.getElementById('autoSave');
+          if (autoSaveEl) currentSettings.autoSave = autoSaveEl.checked;
+          const soundEl = document.getElementById('soundEnabled');
+          if (soundEl) currentSettings.soundEnabled = soundEl.checked;
+          const worldBookEl = document.getElementById('worldBookEnabled');
+          if (worldBookEl) currentSettings.worldBookEnabled = worldBookEl.checked;
+
+          // 准备保存数据 - 分级压缩策略
+          const settingsKey = `chatSettings_${currentChatInfo.id}`;
+          let settingsToSave = JSON.parse(JSON.stringify(currentSettings));
+
+          // 第一级：限制头像文件大小到100KB
+          if (settingsToSave.userAvatarFile && settingsToSave.userAvatarFile.length > 100000) {
+            settingsToSave.userAvatarFile = '';
+            showToast('用户头像过大，已移除');
+          }
+          if (settingsToSave.aiAvatarFile && settingsToSave.aiAvatarFile.length > 100000) {
+            settingsToSave.aiAvatarFile = '';
+            showToast('AI头像过大，已移除');
+          }
+
+          // 尝试保存
+          try {
+            localStorage.setItem(settingsKey, JSON.stringify(settingsToSave));
+            console.log('设置保存成功');
+          } catch (e) {
+            if (e.name === 'QuotaExceededError') {
+              console.warn('存储空间不足，进行数据压缩');
+              
+              // 第二级：移除所有头像文件
+              settingsToSave.userAvatarFile = '';
+              settingsToSave.aiAvatarFile = '';
+              
+              try {
+                localStorage.setItem(settingsKey, JSON.stringify(settingsToSave));
+                showToast('存储空间不足，已移除头像后保存');
+              } catch (e2) {
+                // 第三级：只保存核心设置
+                const coreSettings = {
+                  userName: settingsToSave.userName,
+                  aiName: settingsToSave.aiName,
+                  userAvatar: settingsToSave.userAvatar,
+                  aiAvatar: settingsToSave.aiAvatar,
+                  aiPersonality: settingsToSave.aiPersonality.substring(0, 100),
+                  autoSave: settingsToSave.autoSave || false,
+                  soundEnabled: settingsToSave.soundEnabled || false,
+                  worldBookEnabled: settingsToSave.worldBookEnabled || false
+                };
+                
+                try {
+                  localStorage.setItem(settingsKey, JSON.stringify(coreSettings));
+                  showToast('已压缩设置并保存');
+                  settingsToSave = coreSettings;
+                } catch (e3) {
+                  showToast('存储空间已满，请清理数据');
+                  return;
+                }
+              }
+            } else {
+              throw e;
+            }
+          }
+
+          // 更新界面
+          Object.assign(currentSettings, settingsToSave);
+          
+          // 如果存在更新函数就调用
+          if (typeof updateAvatarDisplay === 'function') {
+            updateAvatarDisplay('user', currentSettings.userAvatar, currentSettings.userAvatarFile);
+            updateAvatarDisplay('ai', currentSettings.aiAvatar, currentSettings.aiAvatarFile);
+          }
+
+          // 同步到聊天信息
+          if (currentChatInfo && currentChatInfo.type === 'ai') {
+            currentChatInfo.name = currentSettings.aiName;
+            if (currentSettings.aiAvatarFile) {
+              currentChatInfo.avatarFile = currentSettings.aiAvatarFile;
+              currentChatInfo.avatar = '';
+            } else {
+              currentChatInfo.avatar = currentSettings.aiAvatar;
+              currentChatInfo.avatarFile = '';
+            }
+          }
+
+          // 更新界面
+          if (typeof updateUI === 'function') {
+            updateUI();
+          }
+          
+          // 关闭设置面板
+          const panel = document.getElementById('settingsPanel');
+          if (panel) panel.classList.remove('visible');
+          
+          showToast('设置已保存');
+          
+        } catch (error) {
+          console.error('保存设置失败:', error);
+          showToast('保存设置失败: ' + error.message);
+        }
+      }
+
+      // 修复URL参数处理，防止网址过长
+      function initFromQQParams() {
+        // 检查URL长度，如果过长则清理
+        if (window.location.href.length > 2000) {
+          console.warn('URL过长，自动清理');
+          const baseUrl = window.location.pathname;
+          window.history.replaceState({}, '', baseUrl);
+          
+          // 使用默认聊天信息
+          currentChatInfo = {
+            id: 'default_' + Date.now(),
+            name: 'AI助手',
+            avatar: 'AI',
+            avatarFile: '',
+            type: 'ai',
+            status: '在线',
+            createTime: new Date()
+          };
+          return;
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const chatId = urlParams.get('chatId');
+        const chatName = urlParams.get('chatName');
+        const chatAvatar = urlParams.get('chatAvatar');
+        const chatType = urlParams.get('type');
+
+        if (chatId) {
+          currentChatInfo = {
+            id: chatId,
+            name: chatName ? decodeURIComponent(chatName).substring(0, 50) : '未知联系人', // 限制长度
+            avatar: chatAvatar ? decodeURIComponent(chatAvatar).substring(0, 10) : '?', // 限制长度
+            avatarFile: '', // 不从URL获取头像文件
+            type: chatType || 'friend',
+            status: chatType === 'ai' ? '在线' : '最后上线刚刚',
+            createTime: new Date()
+          };
+
+          // 如果是AI聊天，优先使用本地设置
+          if (chatType === 'ai') {
+            const saved = localStorage.getItem(`chatSettings_${chatId}`);
+            if (saved) {
+              try {
+                const settings = JSON.parse(saved);
+                if (settings.aiName) {
+                  currentChatInfo.name = settings.aiName;
+                }
+                if (settings.aiAvatarFile) {
+                  currentChatInfo.avatarFile = settings.aiAvatarFile;
+                  currentChatInfo.avatar = '';
+                } else if (settings.aiAvatar) {
+                  currentChatInfo.avatar = settings.aiAvatar;
+                }
+              } catch (e) {
+                console.warn('解析本地设置失败:', e);
+              }
+            }
+          }
+        } else {
+          // 没有聊天ID，使用默认值
+          currentChatInfo = {
+            id: 'default_' + Date.now(),
+            name: 'AI助手',
+            avatar: 'AI',
+            avatarFile: '',
+            type: 'ai',
+            status: '在线',
+            createTime: new Date()
+          };
+        }
+
+        console.log('初始化聊天信息:', currentChatInfo);
+      }
+
+      // 修复iframe参数传递，避免传递过长URL
+      function openEmojiManager() {
+        const iframe = document.getElementById('emojiIframe');
+        if (iframe) {
+          // 只传递必要的参数，不传递完整的search参数
+          iframe.src = `biaoqingbao.html?simple=1`;
+        }
+      }
+
       // 工具函数
       function formatTime(date) {
         return date.toLocaleTimeString('zh-CN', {
@@ -4331,6 +4628,40 @@
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+      }
+
+      function showToast(message) {
+        // 创建提示元素
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: rgba(0, 0, 0, 0.8);
+          color: white;
+          padding: 12px 24px;
+          border-radius: 20px;
+          font-size: 14px;
+          z-index: 10000;
+          backdrop-filter: blur(10px);
+          transition: opacity 0.3s ease;
+        `;
+        toast.textContent = message;
+
+        document.body.appendChild(toast);
+
+        // 3秒后自动消失
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.style.opacity = '0';
+            setTimeout(() => {
+              if (toast.parentNode) {
+                document.body.removeChild(toast);
+              }
+            }, 300);
+          }
+        }, 3000);
       }
 
       function playNotificationSound() {
