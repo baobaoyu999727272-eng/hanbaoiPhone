@@ -190,6 +190,146 @@
         border: 1px solid #ffccc7;
         border-radius: 8px;
       }
+      
+      /* 折叠功能样式 */
+      .collapsible-header {
+        cursor: pointer;
+        position: relative;
+        user-select: none;
+        transition: all 0.3s ease;
+      }
+      
+      .collapsible-header:hover {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6b5b9a 100%);
+      }
+      
+      .collapsible-header::after {
+        content: '▼';
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        transition: transform 0.3s ease;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.8);
+      }
+      
+      .collapsible-header.collapsed::after {
+        transform: translateY(-50%) rotate(-90deg);
+      }
+      
+      .collapsible-content {
+        max-height: 1000px;
+        overflow: hidden;
+        transition: max-height 0.3s ease, padding 0.3s ease;
+      }
+      
+      .collapsible-content.collapsed {
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+      
+      /* 版本项折叠样式 */
+      .version-item {
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 0;
+      }
+      
+      .version-item:last-child {
+        border-bottom: none;
+      }
+      
+      .version-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.2s ease;
+        position: relative;
+      }
+      
+      .version-header:hover {
+        background: rgba(24, 144, 255, 0.05);
+        margin: 0 -20px;
+        padding-left: 20px;
+        padding-right: 20px;
+        border-radius: 8px;
+      }
+      
+      .version-header::after {
+        content: '▼';
+        font-size: 12px;
+        color: #666;
+        transition: transform 0.3s ease;
+        margin-left: 8px;
+      }
+      
+      .version-header.collapsed::after {
+        transform: rotate(-90deg);
+      }
+      
+      .version-title {
+        font-weight: 600;
+        color: #1890ff;
+        font-size: 15px;
+      }
+      
+      .version-date {
+        color: #999;
+        font-size: 13px;
+      }
+      
+      .version-details {
+        max-height: 200px;
+        overflow: hidden;
+        transition: max-height 0.3s ease, padding 0.3s ease;
+        padding-left: 16px;
+        margin-bottom: 12px;
+      }
+      
+      .version-details.collapsed {
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        margin-bottom: 0;
+      }
+      
+      .version-details ul {
+        margin: 0;
+        padding-left: 16px;
+        list-style-type: none;
+      }
+      
+      .version-details li {
+        margin-bottom: 6px;
+        position: relative;
+        padding-left: 20px;
+        color: #555;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      
+      .version-details li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 8px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #1890ff;
+      }
+      
+      .feature-new::before {
+        background: #52c41a !important;
+      }
+      
+      .feature-fix::before {
+        background: #faad14 !important;
+      }
     </style>
   </head>
   <body>
@@ -199,10 +339,7 @@
         <div class="status-bar">
           <div class="status-left" id="currentTime">9:41</div>
           <div class="status-right">
-            <span>📶</span>
-            <span>📡</span>
-            <span style="color: #00d4aa">100%</span>
-            <span style="color: #00d4aa">🔋</span>
+            <span style="color: #00d4aa">100%🔋</span>
           </div>
         </div>
 
@@ -224,81 +361,55 @@
               </div>
               <div class="version-info">
                 <span class="version-label">版本</span>
-                <span class="version-value">1.0</span>
+                <span class="version-value">测试版 v1.01</v1></span>
               </div>
               <div class="version-info">
-                <span class="version-label">类型</span>
-                <span class="version-value">公益作品</span>
+                <span class="version-label">碎碎念</span>
+                <span class="version-value">此人很懒，更新会很慢。</span>
               </div>
             </div>
           </div>
 
-          <!-- 目前的功能 -->
+          <!-- 更新日志 -->
           <div class="section">
-            <div class="section-header">⚡ 目前的功能</div>
-            <div class="section-content">
-              <h3>🎯 核心功能</h3>
-              <ul>
-                <li><strong>AI智能对话：</strong>支持多种AI模型，智能回复</li>
-                <li><strong>仿QQ聊天界面：</strong>高度还原QQ聊天体验</li>
-                <li><strong>个人资料设置：</strong>自定义用户和AI角色信息</li>
-                <li><strong>API接口管理：</strong>灵活配置AI接口参数</li>
-              </ul>
-
-              <h3>🎨 界面功能</h3>
-              <ul>
-                <li><strong>iPhone风格设计：</strong>仿真iPhone界面和交互</li>
-                <li><strong>表情包系统：</strong>丰富的emoji和贴图支持</li>
-                <li><strong>主题定制：</strong>多种界面主题可选</li>
-                <li><strong>响应式布局：</strong>适配不同屏幕尺寸</li>
-              </ul>
-
-              <h3>💬 聊天功能</h3>
-              <ul>
-                <li><strong>消息类型：</strong>文本、表情、图片消息</li>
-                <li><strong>转账红包：</strong>仿真转账和红包功能</li>
-                <li><strong>聊天记录：</strong>本地保存聊天历史</li>
-                <li><strong>多轮对话：</strong>支持上下文连续对话</li>
-              </ul>
-
-              <h3>🔧 系统功能</h3>
-              <ul>
-                <li><strong>数据持久化：</strong>设置和聊天记录本地保存</li>
-                <li><strong>错误处理：</strong>完善的错误提示和恢复</li>
-                <li><strong>性能优化：</strong>流畅的动画和交互体验</li>
-                <li><strong>安全保护：</strong>API密钥安全存储</li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- 使用教程 -->
-          <div class="section">
-            <div class="section-header">📖 使用教程</div>
-            <div class="section-content">
-              <h3>🚀 快速开始</h3>
-              <ul>
-                <li><strong>API设置：</strong>点击API设置配置您的AI接口</li>
-                <li><strong>开始聊天：</strong>配置完成后即可开始AI对话</li>
-                <li><strong>QQ功能：</strong>体验仿QQ界面的聊天功能</li>
-                <li><strong>个性化：</strong>在聊天界面设置个人资料和AI角色</li>
-              </ul>
-
-              <h3>💡 功能特色</h3>
-              <ul>
-                <li>仿iPhone界面设计，体验更真实</li>
-                <li>支持多种AI模型接口</li>
-                <li>丰富的表情包和聊天功能</li>
-                <li>个性化角色设定</li>
-                <li>转账、红包等趣味功能</li>
-              </ul>
-
-              <h3>⚙️ 高级功能</h3>
-              <ul>
-                <li>支持自定义系统提示词</li>
-                <li>消息记录本地保存</li>
-                <li>多种聊天模式切换</li>
-                <li>响应式界面适配</li>
-              </ul>
+            <div class="section-header collapsible-header" onclick="toggleCollapse(this)">📅 更新日志</div>
+            <div class="section-content collapsible-content">
+              
+              <!-- v1.01 版本 -->
+              <div class="version-item">
+                <div class="version-header" onclick="toggleVersionCollapse(this)">
+                  <div>
+                    <span class="version-title">v1.01</span>
+                    <span class="version-date">2025.9.06</span>
+                  </div>
+                </div>
+                <div class="version-details">
+                  <ul>
+                    <li class="feature-new">✅ 新增世界书功能</li>
+                    <li class="feature-fix">⭕ 修复世界书相关问题</li>
+                    <li class="feature-new">✅ 新增照片界面</li>
+                    <li class="feature-new">✅ 优化用户界面体验</li>
+                    <li class="feature-fix">⭕ 修复聊天按钮卡住问题</li>
+                    <li class="feature-new">✅ 增加消息滑动删除功能</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <!-- v1.0 版本 -->
+              <div class="version-item">
+                <div class="version-header" onclick="toggleVersionCollapse(this)">
+                  <div>
+                    <span class="version-title">v1.0</span>
+                    <span class="version-date">2025.9.05</span>
+                  </div>
+                </div>
+                <div class="version-details">
+                  <ul>
+                    <li class="feature-new">✅ 测试版发布</li>
+                  </ul>
+                </div>
+              </div>
+              
             </div>
           </div>
 
@@ -372,6 +483,38 @@
       // 返回到主页
       function goToIndex() {
         window.location.href = './index.html';
+      }
+
+      // 折叠功能
+      function toggleCollapse(header) {
+        const content = header.nextElementSibling;
+        const isCollapsed = content.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+          // 展开
+          header.classList.remove('collapsed');
+          content.classList.remove('collapsed');
+        } else {
+          // 收起
+          header.classList.add('collapsed');
+          content.classList.add('collapsed');
+        }
+      }
+
+      // 版本详情折叠功能
+      function toggleVersionCollapse(header) {
+        const details = header.nextElementSibling;
+        const isCollapsed = details.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+          // 展开
+          header.classList.remove('collapsed');
+          details.classList.remove('collapsed');
+        } else {
+          // 收起
+          header.classList.add('collapsed');
+          details.classList.add('collapsed');
+        }
       }
 
       // 页面加载完成后的初始化

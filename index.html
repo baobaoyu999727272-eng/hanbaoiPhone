@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>AI聊天界面</title>
+    <title>HANBAO</title>
     <style>
       * {
         box-sizing: border-box;
@@ -164,35 +164,51 @@
         <div class="dynamic-island" aria-hidden="true"></div>
         <div class="status-bar" aria-hidden="true">
           <div class="status-left" id="currentTime">13:28</div>
-          <div class="status-right"><span>📶</span><span>📡</span><span>🔋</span><span>100%</span></div>
+          <div class="status-right"><span style="color: #00d4aa">100%🔋</span></div>
         </div>
 
-        <div class="date-display">9月5日 星期五</div>
+        <div class="date-display" id="currentDate">9月5日 星期五</div>
 
         <div class="app-dock" aria-hidden="true">
           <div class="dock-row">
             <button class="app-icon" data-id="world-book" aria-label="世界书">
-              <img src="./icons/世界书.png" alt="世界书" />
+              <img
+                src="./book.png"
+                alt="世界书"
+                onerror="this.style.display='none'; this.nextElementSibling.style.fontSize='32px'; this.nextElementSibling.innerHTML='📚';"
+              />
               <span>世界书</span>
             </button>
             <button class="app-icon" data-id="presets" aria-label="设置">
-              <img src="./icons/设置.png" alt="设置" />
+              <img
+                src="./settings.png"
+                alt="设置"
+                onerror="this.style.display='none'; this.nextElementSibling.style.fontSize='32px'; this.nextElementSibling.innerHTML='⚙️';"
+              />
               <span>设置</span>
             </button>
           </div>
           <div class="dock-row">
             <button class="app-icon" data-id="qq" aria-label="QQ">
-              <img src="./icons/QQ.png" alt="QQ" />
+              <img
+                src="./QQ.png"
+                alt="QQ"
+                onerror="this.style.display='none'; this.nextElementSibling.style.fontSize='32px'; this.nextElementSibling.innerHTML='💬';"
+              />
               <span>QQ</span>
             </button>
             <button class="app-icon" data-id="api" aria-label="API设置">
-              <img src="./icons/API.png" alt="API设置" />
+              <img
+                src="./API.png"
+                alt="API设置"
+                onerror="this.style.display='none'; this.nextElementSibling.style.fontSize='32px'; this.nextElementSibling.innerHTML='🔧';"
+              />
               <span>API设置</span>
             </button>
           </div>
         </div>
 
-        <div class="note">静态 UI 框架 — 所有元素为固定视觉组件</div>
+        <div class="note">HANBAO — BAOBAOYU-v1.01</div>
       </div>
     </div>
     <script>
@@ -243,7 +259,7 @@
                   window.location.href = './api.html';
                   break;
                 case 'world-book':
-                  // 可以添加其他页面跳转
+                  window.location.href = './work.html';
                   break;
                 case 'presets':
                   window.location.href = './shezhi.html';
@@ -264,6 +280,37 @@
           });
         });
       })();
+
+      // 更新时间和日期显示
+      function updateTimeAndDate() {
+        const now = new Date();
+
+        // 更新状态栏时间
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const timeString = `${hours}:${minutes}`;
+
+        const timeElement = document.getElementById('currentTime');
+        if (timeElement) {
+          timeElement.textContent = timeString;
+        }
+
+        // 更新日期显示
+        const month = now.getMonth() + 1;
+        const date = now.getDate();
+        const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+        const weekday = weekdays[now.getDay()];
+        const dateString = `${month}月${date}日 ${weekday}`;
+
+        const dateElement = document.getElementById('currentDate');
+        if (dateElement) {
+          dateElement.textContent = dateString;
+        }
+      }
+
+      // 初始化时间更新
+      updateTimeAndDate();
+      setInterval(updateTimeAndDate, 60000); // 每分钟更新一次
     </script>
   </body>
 </html>

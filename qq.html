@@ -430,10 +430,7 @@
         <div class="status-bar">
           <div class="status-left" id="currentTime">9:41</div>
           <div class="status-right">
-            <span>📶</span>
-            <span>📡</span>
-            <span style="color: #00d4aa">100%</span>
-            <span style="color: #00d4aa">🔋</span>
+            <span style="color: #00d4aa">100%🔋</span>
           </div>
         </div>
 
@@ -877,9 +874,18 @@
           const params = new URLSearchParams({
             chatId: chat.id,
             chatName: encodeURIComponent(chat.name),
-            chatAvatar: encodeURIComponent(chat.avatarType === 'image' ? '' : chat.avatar || chat.name.charAt(0)),
             type: chat.id === 'ai_assistant' ? 'ai' : 'friend',
           });
+
+          // 传递头像信息
+          if (chat.avatarType === 'image') {
+            // 如果是图片头像，传递头像文件信息
+            params.set('chatAvatarFile', encodeURIComponent(chat.avatar));
+            params.set('chatAvatar', ''); // 清空字母头像
+          } else {
+            // 如果是文字头像，传递字母
+            params.set('chatAvatar', encodeURIComponent(chat.avatar || chat.name.charAt(0)));
+          }
 
           window.location.href = `./chat.html?${params.toString()}`;
         }

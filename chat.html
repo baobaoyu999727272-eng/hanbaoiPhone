@@ -167,6 +167,60 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: all 0.2s ease;
+      }
+
+      .nav-icon:hover {
+        background: rgba(24, 144, 255, 0.1);
+        border-radius: 4px;
+      }
+
+      .nav-icon.delete-mode-active {
+        background: #ff3b30;
+        color: white;
+        border-radius: 4px;
+      }
+
+      /* 删除模式相关样式 */
+      .delete-mode .message {
+        cursor: pointer;
+      }
+
+      .delete-mode .message:hover {
+        background: rgba(255, 59, 48, 0.05);
+      }
+
+      .message-delete-cross {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 20px;
+        height: 20px;
+        background: #ff3b30;
+        color: white;
+        border: 2px solid white;
+        border-radius: 50%;
+        font-size: 12px;
+        display: none;
+        cursor: pointer;
+        z-index: 10;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .message.sent .message-delete-cross {
+        right: -8px;
+      }
+
+      .message.received .message-delete-cross {
+        left: -8px;
+        right: auto;
+      }
+
+      .delete-mode .message-delete-cross {
+        display: flex;
       }
       /* 聊天区域 */
       .chat-container {
@@ -192,6 +246,8 @@
         max-width: 85%;
         animation: messageSlide 0.3s ease-out;
         position: relative;
+        touch-action: pan-y; /* 允许垂直滚动，限制水平滚动 */
+        user-select: none; /* 防止文本选择干扰滑动 */
       }
       @keyframes messageSlide {
         from {
@@ -900,6 +956,134 @@
         max-width: 120px;
       }
 
+      /* 图片消息样式 */
+      .image-bubble {
+        padding: 8px !important;
+        max-width: 280px !important;
+        background: #fff !important;
+        border-radius: 12px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+      }
+
+      .message.sent .image-bubble {
+        background: #007aff !important;
+      }
+
+      .image-message {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .message-image {
+        width: 100%;
+        max-width: 260px;
+        max-height: 200px;
+        object-fit: cover;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .message-image:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .image-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 12px;
+        color: #666;
+      }
+
+      .message.sent .image-info {
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .image-filename {
+        font-weight: 500;
+        word-break: break-all;
+        line-height: 1.3;
+      }
+
+      .image-filesize {
+        opacity: 0.8;
+      }
+
+      .image-tag {
+        display: inline-block;
+        background: rgba(0, 122, 255, 0.1);
+        color: #007aff;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        margin-right: 4px;
+        margin-top: 2px;
+      }
+
+      .message.sent .image-tag {
+        background: rgba(255, 255, 255, 0.2);
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      /* 图片预览模态框 */
+      .image-preview-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+
+      .image-preview-content {
+        max-width: 90%;
+        max-height: 90%;
+        position: relative;
+      }
+
+      .image-preview-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        border-radius: 8px;
+      }
+
+      .image-preview-close {
+        position: absolute;
+        top: -40px;
+        right: 0;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: background 0.2s ease;
+      }
+
+      .image-preview-close:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .image-preview-info {
+        position: absolute;
+        bottom: -40px;
+        left: 0;
+        color: #fff;
+        font-size: 14px;
+        opacity: 0.8;
+      }
+
       /* 加载动画 */
       .typing-indicator {
         display: flex;
@@ -1245,10 +1429,7 @@
         <div class="status-bar">
           <div class="status-left" id="currentTime">9:41</div>
           <div class="status-right">
-            <span>📶</span>
-            <span>📡</span>
-            <span style="color: #00d4aa">100%</span>
-            <span style="color: #00d4aa">🔋</span>
+            <span style="color: #00d4aa">100%🔋</span>
           </div>
         </div>
 
@@ -1265,6 +1446,7 @@
             </div>
           </div>
           <div class="nav-right">
+            <button class="nav-icon" id="deleteToggleBtn" onclick="toggleDeleteMode()" title="删除模式">🗑️</button>
             <button class="nav-icon" onclick="showChatInfo()" title="聊天信息">ℹ️</button>
             <button class="nav-icon" onclick="toggleSettings()" title="设置">⚙️</button>
           </div>
@@ -1309,13 +1491,7 @@
             <div class="input-row">
               <button class="function-btn" id="expandBtn" title="更多功能">➕</button>
               <div class="input-container">
-                <textarea
-                  class="message-input"
-                  id="messageInput"
-                  placeholder="请输入消息..."
-                  rows="1"
-                  maxlength="1000"
-                ></textarea>
+                <textarea class="message-input" id="messageInput" placeholder="请输入消息..." rows="1"></textarea>
               </div>
               <button class="send-btn" id="sendBtn">➤</button>
               <button class="function-btn" id="functionBtn" title="更多功能">⚡</button>
@@ -1363,15 +1539,15 @@
               <div class="setting-title">用户资料</div>
               <div class="setting-item">
                 <label class="setting-label">你的昵称</label>
-                <input type="text" class="setting-input" id="userName" placeholder="请输入你的昵称" maxlength="20" />
+                <input type="text" class="setting-input" id="userName" placeholder="请输入你的昵称" />
               </div>
               <div class="setting-item">
                 <label class="setting-label">你的年龄</label>
-                <input type="text" class="setting-input" id="userAge" placeholder="请输入你的年龄" maxlength="3" />
+                <input type="text" class="setting-input" id="userAge" placeholder="请输入你的年龄" />
               </div>
               <div class="setting-item">
                 <label class="setting-label">你的爱好</label>
-                <input type="text" class="setting-input" id="userHobby" placeholder="请输入你的爱好" maxlength="100" />
+                <input type="text" class="setting-input" id="userHobby" placeholder="请输入你的爱好" />
               </div>
               <div class="setting-item">
                 <label class="setting-label">用户头像</label>
@@ -1404,7 +1580,6 @@
                   class="setting-textarea"
                   id="userPersonality"
                   placeholder="描述你的性格、说话风格、行为习惯等..."
-                  maxlength="500"
                 ></textarea>
               </div>
               <div class="setting-item">
@@ -1413,7 +1588,6 @@
                   class="setting-textarea"
                   id="userBackground"
                   placeholder="描述你的背景、职业、经历、专业领域等..."
-                  maxlength="500"
                 ></textarea>
               </div>
             </div>
@@ -1422,21 +1596,15 @@
               <div class="setting-title">AI助手设置</div>
               <div class="setting-item">
                 <label class="setting-label">AI名称</label>
-                <input type="text" class="setting-input" id="aiName" placeholder="AI助手名称" maxlength="20" />
+                <input type="text" class="setting-input" id="aiName" placeholder="AI助手名称" />
               </div>
               <div class="setting-item">
                 <label class="setting-label">AI年龄</label>
-                <input type="text" class="setting-input" id="aiAge" placeholder="请输入AI的年龄" maxlength="3" />
+                <input type="text" class="setting-input" id="aiAge" placeholder="请输入AI的年龄" />
               </div>
               <div class="setting-item">
                 <label class="setting-label">AI爱好</label>
-                <input
-                  type="text"
-                  class="setting-input"
-                  id="aiHobby"
-                  placeholder="请输入AI的爱好和兴趣"
-                  maxlength="100"
-                />
+                <input type="text" class="setting-input" id="aiHobby" placeholder="请输入AI的爱好和兴趣" />
               </div>
               <div class="setting-item">
                 <label class="setting-label">AI头像</label>
@@ -1465,7 +1633,6 @@
                   class="setting-textarea"
                   id="aiPersonality"
                   placeholder="描述AI的性格、说话风格等..."
-                  maxlength="500"
                 ></textarea>
               </div>
               <div class="setting-item">
@@ -1474,7 +1641,6 @@
                   class="setting-textarea"
                   id="aiBackground"
                   placeholder="描述AI的背景、来历、专业领域等..."
-                  maxlength="500"
                 ></textarea>
               </div>
             </div>
@@ -1499,6 +1665,23 @@
                 <label class="setting-label">
                   <input type="checkbox" id="soundEnabled" checked /> 启用消息提示音
                 </label>
+              </div>
+              <div class="setting-item">
+                <label class="setting-label">
+                  <input type="checkbox" id="worldBookEnabled" checked /> 启用世界书增强
+                </label>
+                <small style="color: #666; font-size: 12px; margin-top: 4px; display: block">
+                  开启后AI将根据世界书条目进行角色扮演和对话
+                </small>
+              </div>
+              <div class="setting-item">
+                <div style="display: flex; align-items: center; justify-content: space-between">
+                  <span class="setting-label">世界书管理</span>
+                  <button type="button" class="upload-btn" onclick="openWorldBook()">打开世界书</button>
+                </div>
+                <small style="color: #666; font-size: 12px; margin-top: 4px; display: block">
+                  管理角色设定、世界观、背景故事等条目
+                </small>
               </div>
             </div>
 
@@ -1543,6 +1726,93 @@
     </div>
 
     <script>
+      // 加载世界书API
+      function loadWorldBookAPI() {
+        try {
+          // 如果世界书API不存在，则创建一个模拟的API
+          if (typeof window.getWorldBookEntriesForCharacter !== 'function') {
+            console.log('世界书API不存在，创建模拟API');
+
+            // 从localStorage加载世界书数据
+            function loadWorldBookData() {
+              const saved = localStorage.getItem('worldBookEntries');
+              return saved ? JSON.parse(saved) : [];
+            }
+
+            // 模拟世界书API
+            window.getWorldBookEntriesForCharacter = function (characterType, keywords = []) {
+              const worldBookEntries = loadWorldBookData();
+
+              // 获取全局条目和特定角色的条目
+              let relevantEntries = worldBookEntries.filter(
+                entry => !entry.characterBinding || entry.characterBinding === characterType,
+              );
+
+              // 如果提供了关键词，进一步过滤
+              if (keywords.length > 0) {
+                relevantEntries = relevantEntries.filter(entry => {
+                  const searchText = (entry.title + ' ' + entry.content + ' ' + entry.keywords.join(' ')).toLowerCase();
+                  return keywords.some(keyword => searchText.includes(keyword.toLowerCase()));
+                });
+              }
+
+              // 按优先级排序
+              const priorityOrder = { high: 3, medium: 2, low: 1 };
+              relevantEntries.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+
+              return relevantEntries;
+            };
+
+            window.getAllWorldBookEntries = function () {
+              return loadWorldBookData();
+            };
+          }
+        } catch (error) {
+          console.error('加载世界书API失败:', error);
+        }
+      }
+
+      // 页面加载时初始化世界书API
+      loadWorldBookAPI();
+
+      // 全局变量初始化检查函数
+      function validateGlobalVariables() {
+        // 确保消息数组已初始化
+        if (!Array.isArray(messages)) {
+          console.warn('消息数组未正确初始化，重新初始化');
+          messages = [];
+        }
+
+        // 确保设置对象已初始化
+        if (!currentSettings || typeof currentSettings !== 'object') {
+          console.warn('设置对象未正确初始化，使用默认设置');
+          currentSettings = {
+            userName: '用户',
+            userAvatar: '用',
+            aiName: 'AI助手',
+            aiAvatar: 'AI',
+            soundEnabled: true,
+            autoSave: true,
+            worldBookEnabled: true,
+          };
+        }
+
+        // 确保聊天信息对象已初始化
+        if (!currentChatInfo || typeof currentChatInfo !== 'object') {
+          console.warn('聊天信息未正确初始化，使用默认值');
+          currentChatInfo = {
+            id: Date.now().toString(),
+            name: 'AI助手',
+            avatar: 'AI',
+            type: 'ai',
+            status: '在线',
+            createTime: new Date(),
+          };
+        }
+
+        console.log('全局变量检查完成');
+      }
+
       // 全局变量
       let messages = [];
       let isAITyping = false;
@@ -1573,6 +1843,7 @@
         aiAvatarFile: null, // AI头像文件
         autoSave: true,
         soundEnabled: true,
+        worldBookEnabled: true, // 默认启用世界书
       };
 
       // 更新状态栏时间
@@ -1590,6 +1861,9 @@
 
       // 初始化
       document.addEventListener('DOMContentLoaded', function () {
+        // 立即进行全局变量检查
+        validateGlobalVariables();
+
         // 立即更新时间
         updateTime();
 
@@ -1598,8 +1872,9 @@
 
         // 添加全局错误处理，减少控制台错误信息对用户的干扰
         window.addEventListener('error', function (e) {
-          console.log('页面运行信息:', e.message);
+          console.log('页面运行信息:', e.message, '位置:', e.filename, '行:', e.lineno);
           // 静默处理，不显示错误给用户
+          e.preventDefault();
         });
 
         window.addEventListener('unhandledrejection', function (e) {
@@ -1635,16 +1910,29 @@
           header.addEventListener('dblclick', function () {
             console.log('双击头部，强制清理输入指示器');
             forceCleanTypingIndicator();
-            alert('已清理输入指示器');
+            alert('已清理AI输入状态，发送按钮已恢复');
           });
         }
 
-        // 使用延时确保currentChatInfo已正确初始化后再检查数据
+        // 确保面板初始状态为隐藏
+        const settingsPanel = document.getElementById('settingsPanel');
+        const chatInfoPanel = document.getElementById('chatInfoPanel');
+        if (settingsPanel) settingsPanel.classList.remove('visible');
+        if (chatInfoPanel) chatInfoPanel.style.display = 'none';
+        loadChatHistory();
+        initEventListeners();
+        updateUI();
+
+        // 使用延时确保所有基础初始化完成后再检查数据
         setTimeout(() => {
+          // 确保再次清理状态
+          forceCleanTypingIndicator();
+
           checkRedPacketData();
           checkTransferData();
           checkSelectedEmoji(); // 检查选中的表情包
-        }, 50);
+          checkPendingImage(); // 检查待发送的图片
+        }, 100); // 增加延迟时间确保初始化完成
 
         // 独立的红包数据检查函数
         function checkRedPacketData() {
@@ -1737,7 +2025,7 @@
           setTimeout(() => {
             console.log('从红包页面返回，再次检查红包数据');
             checkRedPacketData();
-          }, 100);
+          }, 200);
         }
 
         // 检查是否从转账页面返回，如果是则再次检查转账数据
@@ -1745,17 +2033,30 @@
           setTimeout(() => {
             console.log('从转账页面返回，再次检查转账数据');
             checkTransferData();
-          }, 100);
+          }, 200);
         }
 
-        // 确保面板初始状态为隐藏
-        const settingsPanel = document.getElementById('settingsPanel');
-        const chatInfoPanel = document.getElementById('chatInfoPanel');
-        if (settingsPanel) settingsPanel.classList.remove('visible');
-        if (chatInfoPanel) chatInfoPanel.style.display = 'none';
-        loadChatHistory();
-        initEventListeners();
-        updateUI();
+        // 检查是否从图片页面返回
+        if (
+          urlParams.get('fromImage') ||
+          localStorage.getItem('pendingImage') ||
+          localStorage.getItem('selectedImage')
+        ) {
+          setTimeout(() => {
+            console.log('检测到从图片页面返回或有待发送图片，进行特殊处理');
+            checkPendingImage();
+            // 额外的状态恢复
+            setTimeout(() => {
+              forceCleanTypingIndicator();
+              const sendBtn = document.getElementById('sendBtn');
+              const messageInput = document.getElementById('messageInput');
+              if (sendBtn && messageInput) {
+                sendBtn.disabled = !messageInput.value.trim();
+                console.log('图片返回后，最终按钮状态:', sendBtn.disabled);
+              }
+            }, 300);
+          }, 250);
+        }
 
         // 强制再次同步AI设置到界面显示
         setTimeout(() => {
@@ -1815,39 +2116,70 @@
         const chatId = urlParams.get('chatId');
         const chatName = urlParams.get('chatName');
         const chatAvatar = urlParams.get('chatAvatar');
+        const chatAvatarFile = urlParams.get('chatAvatarFile');
         const chatType = urlParams.get('type');
+
+        console.log('initFromQQParams - URL参数:', {
+          chatId,
+          chatName,
+          chatAvatar,
+          chatAvatarFile,
+          chatType,
+        });
 
         if (chatId) {
           currentChatInfo = {
             id: chatId,
             name: decodeURIComponent(chatName || '未知联系人'),
             avatar: decodeURIComponent(chatAvatar || '?'),
+            avatarFile: chatAvatarFile ? decodeURIComponent(chatAvatarFile) : '',
             type: chatType || 'friend',
             status: chatType === 'ai' ? '在线' : '最后上线刚刚',
             createTime: new Date(),
           };
 
-          // 如果是AI聊天，优先使用用户设置的AI名称
+          console.log('initFromQQParams - 初始化后的currentChatInfo:', currentChatInfo);
+
+          // 如果是AI聊天，优先使用用户设置的AI名称和头像
           if (chatType === 'ai') {
             const saved = localStorage.getItem('chatSettings');
-            console.log('从localStorage读取的设置:', saved);
+            console.log('initFromQQParams - 从localStorage读取的设置:', saved);
             if (saved) {
               const settings = JSON.parse(saved);
-              console.log('解析后的设置:', settings);
+              console.log('initFromQQParams - 解析后的设置:', settings);
+
               if (settings.aiName) {
-                console.log('更新AI名称从', currentChatInfo.name, '到', settings.aiName);
+                console.log('initFromQQParams - 更新AI名称从', currentChatInfo.name, '到', settings.aiName);
                 currentChatInfo.name = settings.aiName;
               }
-              if (settings.aiAvatarFile) {
+
+              // 处理头像信息 - 优先使用URL传递的头像文件，然后是设置中的头像
+              if (chatAvatarFile) {
+                console.log('initFromQQParams - 使用URL传递的头像文件:', chatAvatarFile);
+                // URL中已有头像文件，保持不变
+              } else if (settings.aiAvatarFile) {
                 currentChatInfo.avatarFile = settings.aiAvatarFile;
                 currentChatInfo.avatar = '';
+                console.log('initFromQQParams - 使用设置中的头像文件:', settings.aiAvatarFile);
+              } else if (settings.aiAvatar) {
+                currentChatInfo.avatar = settings.aiAvatar;
+                currentChatInfo.avatarFile = '';
+                console.log('initFromQQParams - 使用设置中的头像字母:', settings.aiAvatar);
               } else {
                 // 强制重新生成头像字母，不使用URL传递的值
                 currentChatInfo.avatar = settings.aiName ? settings.aiName.charAt(0) : 'AI';
-                console.log('重新生成AI头像字母:', currentChatInfo.avatar, '来源名称:', settings.aiName);
+                currentChatInfo.avatarFile = '';
+                console.log(
+                  'initFromQQParams - 重新生成AI头像字母:',
+                  currentChatInfo.avatar,
+                  '来源名称:',
+                  settings.aiName,
+                );
               }
             }
           }
+
+          console.log('initFromQQParams - 最终的currentChatInfo:', currentChatInfo);
 
           // 更新界面显示
           updateChatInfoDisplay();
@@ -1926,7 +2258,10 @@
           document.getElementById('settingsPanel').style.display = 'none';
 
           // 更新消息计数
-          document.getElementById('messageCount').textContent = messages.length + '条';
+          const messageCountElement = document.getElementById('messageCount');
+          if (messageCountElement && Array.isArray(messages)) {
+            messageCountElement.textContent = messages.length + '条';
+          }
 
           // 显示聊天信息面板
           panel.style.display = 'flex';
@@ -1995,6 +2330,93 @@
       // 消息删除相关变量
       let messageTouchTimer = null;
       let isMessageLongPress = false;
+      let isDeleteMode = false; // 删除模式标志
+      let swipeState = {
+        messageId: null,
+        startX: 0,
+        startY: 0,
+        currentX: 0,
+        currentY: 0,
+        isDragging: false,
+        element: null,
+      };
+
+      // 切换删除模式
+      function toggleDeleteMode() {
+        isDeleteMode = !isDeleteMode;
+        const deleteBtn = document.getElementById('deleteToggleBtn');
+        const messagesArea = document.getElementById('messagesArea');
+
+        if (isDeleteMode) {
+          // 进入删除模式
+          deleteBtn.classList.add('delete-mode-active');
+          deleteBtn.title = '退出删除模式';
+          messagesArea.classList.add('delete-mode');
+
+          // 为所有消息添加删除叉号
+          const messages = document.querySelectorAll('.message');
+          messages.forEach(message => {
+            if (!message.querySelector('.message-delete-cross')) {
+              const deleteX = document.createElement('div');
+              deleteX.className = 'message-delete-cross';
+              deleteX.innerHTML = '×';
+              deleteX.onclick = e => {
+                e.stopPropagation();
+                const messageId = message.getAttribute('data-message-id');
+                quickDeleteMessage(messageId);
+              };
+              message.appendChild(deleteX);
+            }
+          });
+
+          // 振动反馈
+          if (navigator.vibrate) {
+            navigator.vibrate(30);
+          }
+        } else {
+          // 退出删除模式
+          deleteBtn.classList.remove('delete-mode-active');
+          deleteBtn.title = '删除模式';
+          messagesArea.classList.remove('delete-mode');
+
+          // 移除所有删除叉号
+          const deleteXs = document.querySelectorAll('.message-delete-cross');
+          deleteXs.forEach(x => x.remove());
+        }
+      }
+
+      // 快速删除消息（删除模式下使用）
+      function quickDeleteMessage(messageId) {
+        if (confirm('确定要删除这条消息吗？')) {
+          const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+          if (messageEl) {
+            // 删除动画
+            messageEl.style.transform = 'scale(0)';
+            messageEl.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            messageEl.style.opacity = '0';
+
+            // 振动反馈
+            if (navigator.vibrate) {
+              navigator.vibrate(30);
+            }
+
+            setTimeout(() => {
+              messageEl.remove();
+
+              // 从数组中移除 - 处理历史消息ID格式
+              const realId = messageId.toString().replace('history_', '');
+              messages = messages.filter(msg => {
+                return msg.id != messageId && msg.id != realId && `history_${msg.id}` != messageId;
+              });
+
+              // 更新本地存储 - 修复：使用正确的保存函数
+              saveChatHistory();
+
+              console.log(`消息 ${messageId} 已快速删除，剩余消息数量:`, messages.length);
+            }, 300);
+          }
+        }
+      }
 
       // 显示消息删除按钮
       function showMessageDeleteButton(messageId, event) {
@@ -2030,13 +2452,65 @@
       // 消息触摸开始
       function handleMessageTouchStart(messageId, event) {
         isMessageLongPress = false;
+        const touch = event.touches[0];
+
+        // 初始化滑动状态
+        swipeState.messageId = messageId;
+        swipeState.startX = touch.clientX;
+        swipeState.startY = touch.clientY;
+        swipeState.currentX = touch.clientX;
+        swipeState.currentY = touch.clientY;
+        swipeState.isDragging = false;
+        swipeState.element = event.target.closest('.message');
+
+        // 长按显示删除按钮的定时器
         messageTouchTimer = setTimeout(() => {
-          isMessageLongPress = true;
-          showMessageDeleteButton(messageId, event);
-          if (navigator.vibrate) {
-            navigator.vibrate(50);
+          if (!swipeState.isDragging) {
+            isMessageLongPress = true;
+            showMessageDeleteButton(messageId, event);
+            if (navigator.vibrate) {
+              navigator.vibrate(50);
+            }
           }
         }, 500);
+      }
+
+      // 消息触摸移动
+      function handleMessageTouchMove(messageId, event) {
+        if (!swipeState.element || swipeState.messageId !== messageId) return;
+
+        const touch = event.touches[0];
+        swipeState.currentX = touch.clientX;
+        swipeState.currentY = touch.clientY;
+
+        const deltaX = swipeState.currentX - swipeState.startX;
+        const deltaY = swipeState.currentY - swipeState.startY;
+
+        // 判断是否开始滑动（水平滑动距离大于垂直滑动距离，且超过阈值）
+        if (Math.abs(deltaX) > 10 && Math.abs(deltaX) > Math.abs(deltaY)) {
+          if (!swipeState.isDragging) {
+            swipeState.isDragging = true;
+            // 取消长按计时器
+            if (messageTouchTimer) {
+              clearTimeout(messageTouchTimer);
+              messageTouchTimer = null;
+            }
+            event.preventDefault();
+          }
+
+          // 只允许向左滑动（删除）
+          const translateX = Math.min(0, deltaX);
+          const maxTranslate = -80; // 最大滑动距离
+          const finalTranslate = Math.max(maxTranslate, translateX);
+
+          // 应用变换
+          swipeState.element.style.transform = `translateX(${finalTranslate}px)`;
+          swipeState.element.style.transition = 'none';
+
+          // 显示删除区域的透明度
+          const opacity = Math.abs(finalTranslate) / Math.abs(maxTranslate);
+          swipeState.element.style.background = `rgba(255, 59, 48, ${opacity * 0.1})`;
+        }
       }
 
       // 消息触摸结束
@@ -2045,9 +2519,74 @@
           clearTimeout(messageTouchTimer);
         }
 
+        if (swipeState.isDragging && swipeState.element && swipeState.messageId === messageId) {
+          const deltaX = swipeState.currentX - swipeState.startX;
+          const threshold = -60; // 删除阈值
+
+          if (deltaX < threshold) {
+            // 滑动距离足够，执行删除
+            swipeDeleteMessage(messageId);
+          } else {
+            // 滑动距离不够，弹回原位
+            swipeState.element.style.transform = 'translateX(0)';
+            swipeState.element.style.transition = 'transform 0.3s ease';
+            swipeState.element.style.background = '';
+
+            // 清理过渡效果
+            setTimeout(() => {
+              if (swipeState.element) {
+                swipeState.element.style.transition = '';
+              }
+            }, 300);
+          }
+
+          // 重置滑动状态
+          swipeState = {
+            messageId: null,
+            startX: 0,
+            startY: 0,
+            currentX: 0,
+            currentY: 0,
+            isDragging: false,
+            element: null,
+          };
+        }
+
         if (isMessageLongPress) {
           event.preventDefault();
           event.stopPropagation();
+        }
+      }
+
+      // 滑动删除消息
+      function swipeDeleteMessage(messageId) {
+        const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+        if (messageEl) {
+          // 滑动删除动画
+          messageEl.style.transform = 'translateX(-100%)';
+          messageEl.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+          messageEl.style.opacity = '0';
+
+          // 振动反馈
+          if (navigator.vibrate) {
+            navigator.vibrate(30);
+          }
+
+          setTimeout(() => {
+            // 从界面移除
+            messageEl.remove();
+
+            // 从数组中移除 - 处理历史消息ID格式
+            const realId = messageId.toString().replace('history_', '');
+            messages = messages.filter(msg => {
+              return msg.id != messageId && msg.id != realId && `history_${msg.id}` != messageId;
+            });
+
+            // 更新本地存储
+            saveChatHistory();
+
+            console.log(`消息 ${messageId} 已通过滑动删除，剩余消息数量:`, messages.length);
+          }, 300);
         }
       }
 
@@ -2065,13 +2604,16 @@
             messageEl.remove();
           }
 
-          // 从数组中移除
-          messages = messages.filter(msg => msg.id !== messageId);
+          // 从数组中移除 - 处理历史消息ID格式
+          const realId = messageId.toString().replace('history_', '');
+          messages = messages.filter(msg => {
+            return msg.id != messageId && msg.id != realId && `history_${msg.id}` != messageId;
+          });
 
           // 保存聊天记录
-          if (currentSettings.autoSave) {
-            saveChatHistory();
-          }
+          saveChatHistory();
+
+          console.log(`消息 ${messageId} 已删除，剩余消息数量:`, messages.length);
 
           showToast('消息已删除');
         }
@@ -2109,20 +2651,17 @@
         window.location.href = url;
       }
 
-      // 发送图片（文字描述）
+      // 发送图片
       function sendImage() {
-        const description = prompt('请描述你想要分享的图片内容：', '一张美丽的风景照');
-        if (description && description.trim()) {
-          const message = `[图片] ${description.trim()} 🖼️`;
-          addMessage('user', message);
+        // 构建跳转URL，传递当前聊天信息
+        const params = new URLSearchParams({
+          chatId: currentChatInfo.id || 'default',
+          chatName: currentChatInfo.name || '聊天',
+          chatAvatar: currentChatInfo.avatar || 'AI',
+        });
 
-          // 只保存聊天记录，不自动回复
-          if (currentSettings.autoSave) {
-            saveChatHistory();
-          }
-
-          toggleFunctionButtons();
-        }
+        // 跳转到图片发送页面
+        window.location.href = `./tupian.html?${params.toString()}`;
       }
 
       // 显示操作提示
@@ -2324,12 +2863,121 @@
         }
       }
 
+      // 彻底重置聊天状态（用于图片发送后恢复）
+      function resetChatState() {
+        console.log('=== 开始重置聊天状态 ===');
+
+        // 重置所有关键变量
+        isAITyping = false;
+        pendingUserMessage = null;
+
+        // 清理所有AI输入指示器
+        const indicators = document.querySelectorAll('#typingIndicator, .typing-indicator-message');
+        indicators.forEach(indicator => {
+          indicator.remove();
+          console.log('移除输入指示器:', indicator);
+        });
+
+        // 重置按钮状态
+        const sendBtn = document.getElementById('sendBtn');
+        const messageInput = document.getElementById('messageInput');
+        const functionBtn = document.getElementById('functionBtn');
+
+        if (sendBtn && messageInput) {
+          sendBtn.disabled = !messageInput.value.trim();
+          console.log('重置发送按钮状态:', sendBtn.disabled);
+        }
+
+        if (functionBtn) {
+          functionBtn.classList.remove('active');
+          functionBtn.title = '更多功能';
+          console.log('重置功能按钮状态');
+        }
+
+        // 隐藏功能卡片
+        const functionCard = document.getElementById('functionCard');
+        if (functionCard) {
+          functionCard.style.display = 'none';
+        }
+
+        console.log('=== 聊天状态重置完成 ===');
+      }
+
+      // 检查是否有待发送的图片（从图片发送页面返回时）
+      function checkPendingImage() {
+        console.log('=== checkPendingImage 开始 ===');
+        const pendingImage = localStorage.getItem('pendingImage');
+        const selectedImage = localStorage.getItem('selectedImage'); // 新增：照搬表情包逻辑
+        console.log('待发送图片数据 (pendingImage):', pendingImage);
+        console.log('选择图片数据 (selectedImage):', selectedImage);
+
+        // 优先处理新的 selectedImage，然后是旧的 pendingImage
+        const imageData = selectedImage || pendingImage;
+        if (imageData) {
+          try {
+            const parsedImageData = JSON.parse(imageData);
+            console.log('检测到待发送图片:', parsedImageData);
+
+            // 确保在处理图片前清理任何AI输入状态
+            console.log('清理AI输入状态...');
+            hideTypingIndicator();
+            forceCleanTypingIndicator();
+
+            // 创建图片消息
+            const imageMessage = {
+              type: 'image',
+              fileName: parsedImageData.fileName,
+              fileSize: parsedImageData.fileSize,
+              fileType: parsedImageData.fileType,
+              base64: parsedImageData.base64,
+              options: parsedImageData.options || {},
+              timestamp: parsedImageData.timestamp,
+            };
+
+            console.log('准备添加图片消息到聊天...');
+            // 添加图片消息到聊天
+            addImageMessage('user', imageMessage);
+
+            // 清除localStorage中的图片数据
+            localStorage.removeItem('pendingImage');
+            localStorage.removeItem('selectedImage'); // 新增：清除新格式
+            console.log('已清除localStorage中的图片数据');
+
+            // 立即重置聊天状态
+            resetChatState();
+
+            // 延迟再次确保状态正确
+            setTimeout(() => {
+              resetChatState();
+              console.log('延迟重置完成');
+            }, 300);
+
+            // 如果开启了自动保存，保存聊天记录
+            if (currentSettings.autoSave) {
+              saveChatHistory();
+            }
+
+            console.log('图片消息处理完成');
+          } catch (e) {
+            console.error('解析待发送图片数据失败:', e);
+          }
+        }
+      }
+
       // 打开API设置页面
       function openAPISettings() {
         if (currentSettings.autoSave) {
           localStorage.setItem('chatSettings', JSON.stringify(currentSettings));
         }
         window.location.href = './api.html';
+      }
+
+      // 打开世界书页面
+      function openWorldBook() {
+        if (currentSettings.autoSave) {
+          localStorage.setItem('chatSettings', JSON.stringify(currentSettings));
+        }
+        window.location.href = './work.html';
       }
 
       // 更新头像显示
@@ -2652,14 +3300,44 @@
         const functionBtn = document.getElementById('functionBtn');
         const rollBtn = document.getElementById('rollBtn');
 
-        // 输入框自动调整高度
-        messageInput.addEventListener('input', function () {
-          this.style.height = 'auto';
-          this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        console.log('=== 初始化事件监听 ===');
+        console.log('messageInput:', messageInput);
+        console.log('sendBtn:', sendBtn);
+        console.log('expandBtn:', expandBtn);
+        console.log('functionBtn:', functionBtn);
 
-          // 更新发送按钮状态
-          sendBtn.disabled = !this.value.trim();
-        });
+        // 确保发送按钮初始状态
+        if (sendBtn) {
+          sendBtn.disabled = true; // 初始状态为禁用
+          console.log('发送按钮初始状态设置为禁用');
+        }
+
+        // 确保页面初始化时清理AI输入状态
+        setTimeout(() => {
+          hideTypingIndicator();
+          forceCleanTypingIndicator();
+          if (sendBtn && messageInput) {
+            sendBtn.disabled = !messageInput.value.trim();
+          }
+          console.log('页面初始化完成，清理AI输入状态');
+        }, 100);
+
+        // 输入框自动调整高度
+        if (messageInput) {
+          messageInput.addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+
+            // 更新发送按钮状态
+            if (sendBtn) {
+              // 只有在AI不在输入状态时才根据输入内容更新按钮状态
+              if (!isAITyping) {
+                sendBtn.disabled = !this.value.trim();
+                console.log('按钮状态更新:', this.value.trim(), '按钮disabled:', sendBtn.disabled);
+              }
+            }
+          });
+        }
 
         // 回车发送消息
         messageInput.addEventListener('keypress', function (e) {
@@ -2670,10 +3348,16 @@
         });
 
         // 发送按钮点击事件
-        sendBtn.addEventListener('click', function () {
-          console.log('发送按钮被点击');
-          sendMessage();
-        });
+        if (sendBtn) {
+          console.log('发送按钮元素找到:', sendBtn);
+          console.log('发送按钮是否禁用:', sendBtn.disabled);
+          sendBtn.addEventListener('click', function () {
+            console.log('发送按钮被点击');
+            sendMessage();
+          });
+        } else {
+          console.error('发送按钮元素未找到!');
+        }
 
         // 展开按钮点击事件
         expandBtn.addEventListener('click', function () {
@@ -2722,9 +3406,14 @@
 
       // 发送消息
       async function sendMessage() {
+        console.log('=== sendMessage 函数被调用 ===');
         const input = document.getElementById('messageInput');
         const text = input.value.trim();
-        if (!text) return;
+        console.log('输入文本:', text);
+        if (!text) {
+          console.log('输入文本为空，返回');
+          return;
+        }
 
         // 先强制清理任何残留的输入指示器
         hideTypingIndicator();
@@ -2779,6 +3468,7 @@
         messageDiv.setAttribute('data-message-id', messageId);
         messageDiv.oncontextmenu = e => showMessageDeleteButton(messageId, e);
         messageDiv.ontouchstart = e => handleMessageTouchStart(messageId, e);
+        messageDiv.ontouchmove = e => handleMessageTouchMove(messageId, e);
         messageDiv.ontouchend = e => handleMessageTouchEnd(messageId, e);
 
         // 检查是否是红包消息
@@ -2866,6 +3556,19 @@
         `;
 
         messagesArea.appendChild(messageDiv);
+
+        // 如果在删除模式下，为新消息添加删除叉号
+        if (isDeleteMode) {
+          const deleteX = document.createElement('div');
+          deleteX.className = 'message-delete-cross';
+          deleteX.innerHTML = '×';
+          deleteX.onclick = e => {
+            e.stopPropagation();
+            quickDeleteMessage(messageId);
+          };
+          messageDiv.appendChild(deleteX);
+        }
+
         messagesArea.scrollTop = messagesArea.scrollHeight;
 
         // 保存消息到数组
@@ -2946,6 +3649,133 @@
               }
             }
           }, 1200); // 延迟1.2秒模拟AI处理时间
+        }
+      }
+
+      // 添加图片消息到界面
+      function addImageMessage(sender, imageData, shouldSave = true) {
+        const messagesArea = document.getElementById('messagesArea');
+        const messageDiv = document.createElement('div');
+        const isUser = sender === 'user';
+
+        const avatarText = isUser ? currentSettings.userAvatar : currentSettings.aiAvatar;
+        const avatarFile = isUser ? currentSettings.userAvatarFile : currentSettings.aiAvatarFile;
+        const senderName = isUser ? currentSettings.userName : currentSettings.aiName;
+        const messageId = Date.now() + Math.random();
+
+        // 构建头像HTML
+        let avatarHTML;
+        if (avatarFile) {
+          avatarHTML = `<img src="${avatarFile}" alt="${senderName}头像" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;" />`;
+        } else {
+          avatarHTML = avatarText;
+        }
+
+        messageDiv.className = `message ${isUser ? 'sent' : 'received'}`;
+        messageDiv.setAttribute('data-message-id', messageId);
+        messageDiv.oncontextmenu = e => showMessageDeleteButton(messageId, e);
+        messageDiv.ontouchstart = e => handleMessageTouchStart(messageId, e);
+        messageDiv.ontouchmove = e => handleMessageTouchMove(messageId, e);
+        messageDiv.ontouchend = e => handleMessageTouchEnd(messageId, e);
+
+        // 生成文件大小显示
+        const fileSizeText = imageData.fileSize ? `${(imageData.fileSize / 1024 / 1024).toFixed(2)}MB` : '';
+
+        // 构建图片消息内容
+        const imageContent = `
+          <div class="image-message">
+            <img src="${imageData.base64}" alt="${imageData.fileName}" class="message-image" onclick="previewImage('${
+          imageData.base64
+        }', '${imageData.fileName}')" />
+            <div class="image-info">
+              <span class="image-filename">${imageData.fileName}</span>
+              ${fileSizeText ? `<span class="image-filesize">${fileSizeText}</span>` : ''}
+              ${imageData.options.compress ? '<span class="image-tag">已压缩</span>' : ''}
+              ${imageData.options.watermark ? '<span class="image-tag">有水印</span>' : ''}
+              ${imageData.options.original ? '<span class="image-tag">原图</span>' : ''}
+            </div>
+          </div>
+        `;
+
+        messageDiv.innerHTML = `
+          <div class="message-avatar">${avatarHTML}</div>
+          <div class="message-content">
+            <div class="message-bubble image-bubble">${imageContent}</div>
+            <div class="message-time">${formatTime(new Date())}</div>
+          </div>
+          <button class="message-delete-btn" onclick="deleteMessage('${messageId}', event)">🗑️</button>
+        `;
+
+        messagesArea.appendChild(messageDiv);
+
+        // 如果在删除模式下，为新图片消息添加删除叉号
+        if (isDeleteMode) {
+          const deleteX = document.createElement('div');
+          deleteX.className = 'message-delete-cross';
+          deleteX.innerHTML = '×';
+          deleteX.onclick = e => {
+            e.stopPropagation();
+            quickDeleteMessage(messageId);
+          };
+          messageDiv.appendChild(deleteX);
+        }
+
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+
+        // 保存消息到数组（包含图片数据）- 只在shouldSave为true时保存
+        if (shouldSave) {
+          messages.push({
+            id: messageId,
+            sender: sender,
+            type: 'image',
+            imageData: imageData,
+            timestamp: new Date().toISOString(),
+            senderName: senderName,
+          });
+        }
+
+        console.log('图片消息已添加到界面');
+      }
+
+      // 图片预览功能
+      function previewImage(base64, fileName) {
+        // 创建模态框
+        const modal = document.createElement('div');
+        modal.className = 'image-preview-modal';
+        modal.onclick = function (e) {
+          if (e.target === modal) {
+            closeImagePreview();
+          }
+        };
+
+        modal.innerHTML = `
+          <div class="image-preview-content">
+            <button class="image-preview-close" onclick="closeImagePreview()">&times;</button>
+            <img src="${base64}" alt="${fileName}" class="image-preview-img" />
+            <div class="image-preview-info">${fileName}</div>
+          </div>
+        `;
+
+        document.body.appendChild(modal);
+        modal.style.display = 'flex';
+
+        // 添加键盘事件监听
+        document.addEventListener('keydown', handleImagePreviewKeydown);
+      }
+
+      // 关闭图片预览
+      function closeImagePreview() {
+        const modal = document.querySelector('.image-preview-modal');
+        if (modal) {
+          modal.remove();
+        }
+        document.removeEventListener('keydown', handleImagePreviewKeydown);
+      }
+
+      // 处理图片预览的键盘事件
+      function handleImagePreviewKeydown(e) {
+        if (e.key === 'Escape') {
+          closeImagePreview();
         }
       }
 
@@ -3528,6 +4358,14 @@
           indicator.remove();
           console.log('隐藏输入指示器');
         }
+
+        // 更新发送按钮状态
+        const sendBtn = document.getElementById('sendBtn');
+        const messageInput = document.getElementById('messageInput');
+        if (sendBtn && messageInput) {
+          sendBtn.disabled = !messageInput.value.trim();
+          console.log('AI输入完成，更新发送按钮状态');
+        }
       }
 
       // 强制清理所有输入指示器
@@ -3539,12 +4377,42 @@
           indicator.remove();
         });
         console.log('强制清理输入指示器');
+
+        // 更新发送按钮状态
+        const sendBtn = document.getElementById('sendBtn');
+        const messageInput = document.getElementById('messageInput');
+        if (sendBtn && messageInput) {
+          sendBtn.disabled = !messageInput.value.trim();
+          console.log('强制清理后更新发送按钮状态');
+        }
       }
 
       // 获取AI回复（真实API调用）
       async function getAIResponse(userMessage) {
         console.log('=== getAIResponse 开始 ===');
         console.log('输入的用户消息:', userMessage);
+
+        // 动态获取相关的世界书条目
+        try {
+          if (typeof window.getWorldBookEntriesForCharacter === 'function') {
+            // 提取用户消息中的关键词（简单的词汇提取）
+            const keywords = userMessage
+              .replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, '') // 移除标点符号
+              .split(/\s+/)
+              .filter(word => word.length > 1); // 过滤太短的词
+
+            console.log('提取的关键词:', keywords);
+
+            // 获取相关的世界书条目用于上下文增强
+            const relevantEntries = window.getWorldBookEntriesForCharacter('', keywords);
+            if (relevantEntries && Array.isArray(relevantEntries) && relevantEntries.length > 0) {
+              console.log('找到相关世界书条目:', relevantEntries.length, '个');
+              // 这些条目已经在generateSystemPrompt中被包含了
+            }
+          }
+        } catch (error) {
+          console.log('动态世界书检索失败:', error);
+        }
 
         // 从localStorage获取API设置
         const apiSettings = JSON.parse(localStorage.getItem('apiSettings') || '{}');
@@ -3605,6 +4473,12 @@
               '笑口常开，心想事成！',
               '万事如意，红红火火！',
             ];
+
+            // 添加防护性检查
+            if (!amounts || amounts.length === 0 || !blessings || blessings.length === 0) {
+              console.error('红包数组未正确初始化');
+              return '抱歉，红包功能暂时不可用。';
+            }
 
             const amount = amounts[Math.floor(Math.random() * amounts.length)];
             const blessing = blessings[Math.floor(Math.random() * blessings.length)];
@@ -3751,6 +4625,37 @@
           systemPrompt += `\n\n关于你的背景：${currentSettings.aiBackground}`;
         }
 
+        // 集成世界书条目
+        try {
+          if (
+            currentSettings.worldBookEnabled !== false &&
+            typeof window.getWorldBookEntriesForCharacter === 'function'
+          ) {
+            // 获取AI专用和全局的世界书条目
+            const aiEntries = window.getWorldBookEntriesForCharacter('ai') || [];
+            const globalEntries = window.getWorldBookEntriesForCharacter('') || [];
+
+            // 合并条目并去重
+            const allEntries = [...aiEntries, ...globalEntries].filter(
+              (entry, index, self) => entry && index === self.findIndex(e => e && e.id === entry.id),
+            );
+
+            if (allEntries && allEntries.length > 0) {
+              systemPrompt += `\n\n=== 世界设定 ===`;
+              allEntries.forEach(entry => {
+                systemPrompt += `\n\n【${entry.title}】`;
+                if (entry.keywords.length > 0) {
+                  systemPrompt += `\n关键词：${entry.keywords.join(', ')}`;
+                }
+                systemPrompt += `\n${entry.content}`;
+              });
+              systemPrompt += `\n\n请根据以上世界设定信息进行角色扮演和对话，确保回复符合设定的世界观。`;
+            }
+          }
+        } catch (error) {
+          console.log('世界书集成失败:', error);
+        }
+
         // 用户信息
         let userInfo = '';
         if (currentSettings.userName && currentSettings.userName !== '用户') {
@@ -3776,6 +4681,31 @@
 
         if (currentSettings.userBackground) {
           systemPrompt += `\n用户的背景：${currentSettings.userBackground}`;
+        }
+
+        // 用户相关的世界书条目
+        try {
+          if (
+            currentSettings.worldBookEnabled !== false &&
+            typeof window.getWorldBookEntriesForCharacter === 'function'
+          ) {
+            const userEntries = window.getWorldBookEntriesForCharacter('user') || [];
+
+            if (userEntries && userEntries.length > 0) {
+              systemPrompt += `\n\n=== 用户相关设定 ===`;
+              userEntries.forEach(entry => {
+                if (entry && entry.title) {
+                  systemPrompt += `\n\n【${entry.title}】`;
+                  if (entry.keywords && Array.isArray(entry.keywords) && entry.keywords.length > 0) {
+                    systemPrompt += `\n关键词：${entry.keywords.join(', ')}`;
+                  }
+                  systemPrompt += `\n${entry.content}`;
+                }
+              });
+            }
+          }
+        } catch (error) {
+          console.log('用户世界书集成失败:', error);
         }
 
         if (userInfo || currentSettings.userPersonality || currentSettings.userBackground) {
@@ -3918,21 +4848,7 @@ ${emojiList}
 
       // 调用Google Gemini API
       async function callGemini(userMessage, config) {
-        const basePersonality = currentSettings.aiPersonality || '你是一个友善、专业的AI助手';
-        const multiReplyInstruction = `
-
-重要：你必须严格按照JSON数组格式回复，不要添加任何解释文字。
-直接返回一个包含2-3条消息的JSON数组，格式如下：
-["第一条回复", "第二条回复"]
-
-示例：
-["你好！😊", "今天过得怎么样？"]
-
-注意：只返回JSON数组，不要添加任何其他文字或标记。`;
-
-        const systemPrompt = `${basePersonality}${multiReplyInstruction}\nAI背景：${
-          currentSettings.aiBackground || ''
-        }\nAI爱好：${currentSettings.aiHobbies || ''}`;
+        const systemPrompt = generateSystemPrompt();
 
         const response = await fetch(
           `${config.url || 'https://generativelanguage.googleapis.com/v1beta'}/models/${
@@ -4057,6 +4973,8 @@ ${emojiList}
         if (autoSaveEl) autoSaveEl.checked = !!currentSettings.autoSave;
         const soundEl = document.getElementById('soundEnabled');
         if (soundEl) soundEl.checked = !!currentSettings.soundEnabled;
+        const worldBookEl = document.getElementById('worldBookEnabled');
+        if (worldBookEl) worldBookEl.checked = currentSettings.worldBookEnabled !== false; // 默认开启
 
         // 更新头像预览
         updateAvatarDisplay('user', currentSettings.userAvatar, currentSettings.userAvatarFile);
@@ -4096,6 +5014,8 @@ ${emojiList}
         if (autoSaveEl) currentSettings.autoSave = autoSaveEl.checked;
         const soundEl = document.getElementById('soundEnabled');
         if (soundEl) currentSettings.soundEnabled = soundEl.checked;
+        const worldBookEl = document.getElementById('worldBookEnabled');
+        if (worldBookEl) currentSettings.worldBookEnabled = worldBookEl.checked;
 
         // 按聊天ID分别保存设置
         const settingsKey = `chatSettings_${currentChatInfo.id}`;
@@ -4202,8 +5122,17 @@ ${emojiList}
 
           const chatIndex = qqChatData.findIndex(chat => chat.id === currentChatInfo.id);
           if (chatIndex !== -1) {
-            qqChatData[chatIndex].lastMessage =
-              lastMessage.text.length > 20 ? lastMessage.text.substring(0, 20) + '...' : lastMessage.text;
+            // 处理不同类型的消息
+            let messageText = '';
+            if (lastMessage.type === 'image') {
+              messageText = '[图片]';
+            } else if (lastMessage.text) {
+              messageText = lastMessage.text.length > 20 ? lastMessage.text.substring(0, 20) + '...' : lastMessage.text;
+            } else {
+              messageText = '[消息]';
+            }
+
+            qqChatData[chatIndex].lastMessage = messageText;
             qqChatData[chatIndex].time = '刚刚';
             qqChatData[chatIndex].unread = 0; // 清除未读计数
 
@@ -4242,6 +5171,12 @@ ${emojiList}
 
       // 添加消息到UI（用于加载历史记录）
       function addMessageToUI(message) {
+        // 如果是图片消息，使用专门的图片消息函数
+        if (message.type === 'image' && message.imageData) {
+          addImageMessage(message.sender, message.imageData, false); // 不重复保存
+          return;
+        }
+
         const messagesArea = document.getElementById('messagesArea');
         const messageDiv = document.createElement('div');
         const isUser = message.sender === 'user';
@@ -4258,15 +5193,16 @@ ${emojiList}
         }
 
         // 检查是否是红包消息
-        const isRedPacket = message.text.startsWith('🧧');
+        const messageText = message.text || '';
+        const isRedPacket = messageText.startsWith('🧧');
         // 检查是否是转账消息
-        const isTransfer = message.text.startsWith('💸');
+        const isTransfer = messageText.startsWith('💸');
         let messageContent;
 
         if (isRedPacket) {
-          console.log('加载历史记录 - 识别为红包消息:', message.text);
+          console.log('加载历史记录 - 识别为红包消息:', messageText);
           // 解析红包信息 - 新格式: 🧧 祝福语|金额
-          const redPacketMatch = message.text.match(/🧧\s*(.+)\|(.+)/);
+          const redPacketMatch = messageText.match(/🧧\s*(.+)\|(.+)/);
           if (redPacketMatch) {
             const bless = redPacketMatch[1].trim();
             const amount = redPacketMatch[2].trim();
@@ -4282,18 +5218,18 @@ ${emojiList}
             `;
           } else {
             console.log('加载历史记录 - 红包正则匹配失败，使用普通文本');
-            messageContent = escapeHtml(message.text);
+            messageContent = escapeHtml(messageText);
           }
         } else if (isTransfer) {
-          console.log('加载历史记录 - 识别为转账消息:', message.text);
+          console.log('加载历史记录 - 识别为转账消息:', messageText);
           // 解析转账信息 - 格式: 💸 向你转账/已接受转账/退还转账 100.00元 或 💸 向你转账 100.00元 - 说明
-          const transferMatch = message.text.match(
+          const transferMatch = messageText.match(
             /💸\s*(?:向你转账|已接受转账|退还转账)\s*(\d+\.?\d*)元(?:\s*-\s*(.+))?/,
           );
           if (transferMatch) {
             const amount = transferMatch[1].trim();
             const msg = transferMatch[2] ? transferMatch[2].trim() : '转账';
-            const isAccepted = message.text.includes('已接受转账');
+            const isAccepted = messageText.includes('已接受转账');
             console.log('加载历史记录 - 转账解析成功 - 金额:', amount, '说明:', msg, '已接受:', isAccepted);
             messageContent = `
               <div class="transfer-content" data-amount="${amount}" data-message="${msg}" ${
@@ -4309,22 +5245,22 @@ ${emojiList}
             `;
           } else {
             console.log('加载历史记录 - 转账正则匹配失败，使用普通文本');
-            messageContent = escapeHtml(message.text);
+            messageContent = escapeHtml(messageText);
           }
-        } else if (message.text.startsWith('[表情包:') && message.text.endsWith(']')) {
+        } else if (messageText.startsWith('[表情包:') && messageText.endsWith(']')) {
           // 处理表情包消息
-          console.log('加载历史记录 - 识别为表情包消息:', message.text);
-          const emojiMatch = message.text.match(/\[表情包:(.+)\]/);
+          console.log('加载历史记录 - 识别为表情包消息:', messageText);
+          const emojiMatch = messageText.match(/\[表情包:(.+)\]/);
           if (emojiMatch) {
             const emojiSrc = emojiMatch[1];
             console.log('加载历史记录 - 表情包解析成功 - 地址:', emojiSrc);
             messageContent = `<img src="${emojiSrc}" alt="表情包" style="max-width: 120px; max-height: 120px; border-radius: 8px;" onerror="this.alt='[表情包加载失败]'; this.style.display='none'; this.nextSibling.style.display='inline'"><span style="display:none">[表情包]</span>`;
           } else {
             console.log('加载历史记录 - 表情包正则匹配失败，使用普通文本');
-            messageContent = escapeHtml(message.text);
+            messageContent = escapeHtml(messageText);
           }
         } else {
-          messageContent = escapeHtml(message.text);
+          messageContent = escapeHtml(messageText);
         }
 
         // 检查消息类型
@@ -4397,34 +5333,59 @@ ${emojiList}
       function updateUI() {
         // 如果是AI聊天，同步AI设置到聊天信息
         if (currentChatInfo.type === 'ai') {
-          console.log('同步AI设置前:', currentChatInfo.name);
-          console.log('当前AI设置:', currentSettings.aiName);
+          console.log('updateUI - 同步AI设置前:', currentChatInfo.name);
+          console.log('updateUI - 当前AI设置:', currentSettings.aiName);
+          console.log('updateUI - 当前currentChatInfo头像状态:', {
+            avatarFile: currentChatInfo.avatarFile,
+            avatar: currentChatInfo.avatar,
+          });
 
           // 强制重新从localStorage读取最新设置
           const saved = localStorage.getItem('chatSettings');
           if (saved) {
             const latestSettings = JSON.parse(saved);
-            console.log('updateUI中重新读取的最新设置:', latestSettings);
-            console.log('updateUI中重新读取的aiName:', latestSettings.aiName);
+            console.log('updateUI - 从localStorage读取的最新设置:', latestSettings);
+
+            // 更新AI名称
             if (latestSettings.aiName) {
               currentChatInfo.name = latestSettings.aiName;
-              currentSettings.aiName = latestSettings.aiName; // 同时更新currentSettings
+              currentSettings.aiName = latestSettings.aiName;
             }
-          }
 
-          if (currentSettings.aiAvatarFile) {
-            currentChatInfo.avatarFile = currentSettings.aiAvatarFile;
-            currentChatInfo.avatar = '';
-          } else {
-            currentChatInfo.avatar = currentSettings.aiAvatar;
-            currentChatInfo.avatarFile = '';
-          }
+            // 更新头像信息（仅当currentChatInfo没有头像或头像为空时）
+            if (!currentChatInfo.avatarFile && (!currentChatInfo.avatar || currentChatInfo.avatar === '?')) {
+              console.log('updateUI - currentChatInfo头像为空，使用设置中的头像');
+              if (latestSettings.aiAvatarFile) {
+                currentChatInfo.avatarFile = latestSettings.aiAvatarFile;
+                currentChatInfo.avatar = '';
+                currentSettings.aiAvatarFile = latestSettings.aiAvatarFile;
+                console.log('updateUI - 设置头像文件:', latestSettings.aiAvatarFile);
+              } else if (latestSettings.aiAvatar) {
+                currentChatInfo.avatar = latestSettings.aiAvatar;
+                currentChatInfo.avatarFile = '';
+                currentSettings.aiAvatar = latestSettings.aiAvatar;
+                console.log('updateUI - 设置头像字母:', latestSettings.aiAvatar);
+              }
+            } else {
+              console.log('updateUI - currentChatInfo已有头像，不覆盖');
+              // 只同步到currentSettings，不覆盖currentChatInfo
+              if (latestSettings.aiAvatarFile) {
+                currentSettings.aiAvatarFile = latestSettings.aiAvatarFile;
+              } else {
+                currentSettings.aiAvatar = latestSettings.aiAvatar || 'AI';
+              }
+            }
 
-          console.log('同步AI设置后:', currentChatInfo.name);
+            console.log('updateUI - 最终头像状态:', {
+              'currentChatInfo.avatarFile': currentChatInfo.avatarFile,
+              'currentChatInfo.avatar': currentChatInfo.avatar,
+              'currentSettings.aiAvatarFile': currentSettings.aiAvatarFile,
+              'currentSettings.aiAvatar': currentSettings.aiAvatar,
+            });
+          }
         }
 
         // 更新导航栏显示
-        console.log('更新导航栏显示，名称:', currentChatInfo.name);
         document.getElementById('chatName').textContent = currentChatInfo.name;
         document.getElementById('chatStatus').textContent = currentChatInfo.status;
 
@@ -4432,7 +5393,7 @@ ${emojiList}
         updateAvatarDisplay('user', currentSettings.userAvatar, currentSettings.userAvatarFile);
         updateAvatarDisplay('ai', currentSettings.aiAvatar, currentSettings.aiAvatarFile);
 
-        // 更新聊天信息面板
+        // 更新聊天信息面板（使用最新的currentChatInfo）
         updateChatInfoDisplay();
 
         // 检查API配置状态

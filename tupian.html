@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>发送图片</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, Arial,
+          sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #a1c4fd 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: backgroundShift 10s ease-in-out infinite;
+      }
+
+      @keyframes backgroundShift {
+        0%,
+        100% {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #a1c4fd 100%);
+        }
+        33% {
+          background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 50%, #667eea 100%);
+        }
+        66% {
+          background: linear-gradient(135deg, #764ba2 0%, #667eea 50%, #c2e9fb 100%);
+        }
+      }
+
+      .iphone-frame {
+        width: 390px;
+        height: 844px;
+        border-radius: 54px;
+        background: linear-gradient(180deg, #0f1724 0%, #0b1220 60%);
+        border: none;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), inset 0 -6px 20px rgba(0, 0, 0, 0.6),
+          0 8px 30px rgba(2, 6, 23, 0.55);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .screen {
+        width: 370px;
+        height: 804px;
+        border-radius: 44px;
+        background: #f7f7f7;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* 灵动岛 */
+      .dynamic-island {
+        position: absolute;
+        top: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 36px;
+        background: #0b0b0b;
+        border-radius: 18px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+        z-index: 10;
+      }
+
+      /* 状态栏 */
+      .status-bar {
+        position: absolute;
+        top: 6px;
+        left: 0;
+        width: 100%;
+        height: 48px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding: 6px 18px;
+        color: #000;
+        font-size: 15px;
+        font-weight: 600;
+        pointer-events: none;
+        z-index: 5;
+      }
+
+      .status-left {
+        font-weight: 600;
+      }
+      .status-right {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      /* 导航栏 */
+      .navbar {
+        height: 60px;
+        background: #f7f7f7;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        border-bottom: 1px solid #e8e8e8;
+        margin-top: 54px;
+      }
+
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .back-btn {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: #007aff;
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .back-btn:hover {
+        background: #0056cc;
+        transform: scale(1.05);
+      }
+
+      .nav-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+
+      /* 主内容区域 */
+      .main-content {
+        flex: 1;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        overflow-y: auto;
+      }
+
+      /* 图片上传区域 */
+      .upload-area {
+        border: 2px dashed #007aff;
+        border-radius: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        background: rgba(0, 122, 255, 0.05);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .upload-area:hover {
+        background: rgba(0, 122, 255, 0.1);
+        border-color: #0056cc;
+      }
+
+      .upload-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.6;
+      }
+
+      .upload-text {
+        font-size: 16px;
+        color: #333;
+        margin-bottom: 8px;
+        font-weight: 500;
+      }
+
+      .upload-subtext {
+        font-size: 14px;
+        color: #666;
+        line-height: 1.4;
+      }
+
+      .file-input {
+        display: none;
+      }
+
+      /* 图片预览区域 */
+      .preview-area {
+        display: none;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .preview-container {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+      }
+
+      .preview-image {
+        width: 100%;
+        max-height: 300px;
+        object-fit: contain;
+        display: block;
+      }
+
+      .preview-info {
+        padding: 12px 16px;
+        background: #f8f9fa;
+        font-size: 14px;
+        color: #666;
+      }
+
+      /* 响应式设计 */
+      @media (max-width: 400px) {
+        .iphone-frame {
+          width: 100vw;
+          height: 100vh;
+          border-radius: 0;
+        }
+
+        .screen {
+          width: 100%;
+          height: 100%;
+          border-radius: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="iphone-frame">
+      <div class="screen">
+        <!-- 灵动岛 -->
+        <div class="dynamic-island"></div>
+
+        <!-- 状态栏 -->
+        <div class="status-bar">
+          <div class="status-left" id="currentTime">9:41</div>
+          <div class="status-right">
+            <span>100%</span>
+            <span>🔋</span>
+          </div>
+        </div>
+
+        <!-- 导航栏 -->
+        <div class="navbar">
+          <div class="nav-left">
+            <button class="back-btn" onclick="goBack()">‹</button>
+            <div class="nav-title">📷 发送图片</div>
+          </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="main-content">
+          <!-- 上传区域 -->
+          <div class="upload-area" id="uploadArea" onclick="selectFile()">
+            <div class="upload-icon">📷</div>
+            <div class="upload-text">点击选择图片</div>
+            <div class="upload-subtext">
+              支持 JPG、PNG、GIF 格式<br />
+              点击图片即可发送
+            </div>
+            <input type="file" class="file-input" id="fileInput" accept="image/*" onchange="handleFileSelect(event)" />
+          </div>
+
+          <!-- 预览区域 -->
+          <div class="preview-area" id="previewArea">
+            <div class="preview-container" id="previewContainer" onclick="sendImage()">
+              <img class="preview-image" id="previewImage" alt="图片预览" />
+              <div class="preview-info" id="previewInfo">点击图片发送</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let selectedFile = null;
+
+      // 页面初始化
+      document.addEventListener('DOMContentLoaded', function () {
+        updateTime();
+        setInterval(updateTime, 60000);
+      });
+
+      // 更新状态栏时间
+      function updateTime() {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const timeString = `${hours}:${minutes}`;
+
+        const timeElement = document.getElementById('currentTime');
+        if (timeElement) {
+          timeElement.textContent = timeString;
+        }
+      }
+
+      // 选择文件
+      function selectFile() {
+        document.getElementById('fileInput').click();
+      }
+
+      // 处理文件选择
+      function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+          handleFile(file);
+        }
+      }
+
+      // 处理文件
+      function handleFile(file) {
+        // 验证文件类型
+        if (!file.type.startsWith('image/')) {
+          alert('请选择图片文件！');
+          return;
+        }
+
+        // 验证文件大小 (10MB)
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+          alert('文件大小不能超过 10MB！');
+          return;
+        }
+
+        selectedFile = file;
+        showPreview(file);
+      }
+
+      // 显示预览
+      function showPreview(file) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          const previewImage = document.getElementById('previewImage');
+          const previewInfo = document.getElementById('previewInfo');
+          const uploadArea = document.getElementById('uploadArea');
+          const previewArea = document.getElementById('previewArea');
+
+          previewImage.src = e.target.result;
+
+          // 显示文件信息
+          const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+          const dimensions = `${file.name} • ${sizeInMB}MB • 点击发送`;
+          previewInfo.textContent = dimensions;
+
+          // 切换显示
+          uploadArea.style.display = 'none';
+          previewArea.style.display = 'flex';
+        };
+
+        reader.readAsDataURL(file);
+      }
+
+      // 发送图片 - 完全照搬表情包的逻辑
+      function sendImage() {
+        if (!selectedFile) {
+          alert('请先选择图片！');
+          return;
+        }
+
+        // 将图片转换为base64并保存到localStorage
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          const imageData = {
+            timestamp: Date.now(),
+            fileName: selectedFile.name,
+            fileSize: selectedFile.size,
+            fileType: selectedFile.type,
+            base64: e.target.result,
+          };
+
+          // 保存到localStorage，完全像表情包一样
+          localStorage.setItem('selectedImage', JSON.stringify(imageData));
+
+          // 直接返回聊天界面，就像表情包一样
+          goBack();
+        };
+
+        reader.readAsDataURL(selectedFile);
+      }
+
+      // 返回上一页 - 完全照搬表情包的逻辑
+      function goBack() {
+        const chatUrl = 'chat.html' + window.location.search;
+        window.location.href = chatUrl;
+      }
+    </script>
+  </body>
+</html>
